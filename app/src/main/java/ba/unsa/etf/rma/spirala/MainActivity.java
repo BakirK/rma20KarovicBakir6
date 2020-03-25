@@ -3,6 +3,7 @@ package ba.unsa.etf.rma.spirala;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -12,10 +13,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements ITransactionListView {
     private TransactionListAdapter adapter;
+    private TransactionSpinnerAdapter spinnerAdapter;
     private ITransactionListPresenter presenter;
     private ListView transactionList;
     private TextView textViewAmount;
@@ -25,23 +28,23 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     private Spinner sortBySpinner;
     private ImageButton nextBtn, prevBtn;
     private Account account;
+    private Date d;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         adapter = new TransactionListAdapter(getApplicationContext(), R.layout.list_element, new ArrayList<Transaction>());
         transactionList = (ListView) findViewById(R.id.transactionList);
         transactionList.setAdapter(adapter);
-        getPresenter().refreshTransactions(null, "Price - Ascending");
+        d = new Date();
+        getPresenter().refreshTransactions(null, "Price - Ascending", d);
         init();
         fillSpinners();
-
-        textViewAmount.setText(Double.toString(account.getBudget()));
-        textViewLimit.setText(Double.toString(account.getMonthLimit()));
-        dateText.setText(new Date().toString());
-
+        initDateListeners();
     }
 
     private void init() {
@@ -53,6 +56,29 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         nextBtn = (ImageButton) findViewById(R.id.nextBtn);
         prevBtn = (ImageButton) findViewById(R.id.prevBtn);
         account = presenter.getAccount();
+        textViewAmount.setText(Double.toString(account.getBudget()));
+        textViewLimit.setText(Double.toString(account.getMonthLimit()));
+        dateText.setText(d.toString());
+    }
+
+    private void initDateListeners() {
+        prevBtn.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(d);
+            calendar.add(Calendar.MONTH, -1);
+            d = calendar.getTime();
+            dateText.setText(d.toString());
+            getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+        });
+
+        nextBtn.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(d);
+            calendar.add(Calendar.MONTH, 1);
+            d = calendar.getTime();
+            dateText.setText(d.toString());
+            getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+        });
     }
 
     private void fillSpinners() {
@@ -64,13 +90,16 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         filterList.add(Transaction.Type.PURCHASE);
         filterList.add(Transaction.Type.REGULARINCOME);
         filterList.add(Transaction.Type.REGULARPAYMENT);
-        ArrayAdapter<Transaction.Type> filterArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, filterList);
+        spinnerAdapter = new TransactionSpinnerAdapter(getApplicationContext(), R.layout.spinner_element, filterList);
+        filterBySpinner.setAdapter(spinnerAdapter);
+
+        /*ArrayAdapter<Transaction.Type> filterArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, filterList);
         filterArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        filterBySpinner.setAdapter(filterArrayAdapter);
+        filterBySpinner.setAdapter(filterArrayAdapter);*/
         filterBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                getPresenter().refreshTransactions((Transaction.Type)parent.getItemAtPosition(position), sortBySpinner.getSelectedItem().toString());
+                getPresenter().refreshTransactions((Transaction.Type)parent.getItemAtPosition(position), sortBySpinner.getSelectedItem().toString(), d);
             }
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
@@ -94,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //getPresenter().sak();
-                getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), parent.getItemAtPosition(position).toString());
+                getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), parent.getItemAtPosition(position).toString(), d);
             }
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
