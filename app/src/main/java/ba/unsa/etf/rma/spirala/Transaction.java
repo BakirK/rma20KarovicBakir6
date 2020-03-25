@@ -10,7 +10,8 @@ public class Transaction {
         REGULARPAYMENT,
         PURCHASE,
         INDIVIDUALINCOME,
-        REGULARINCOME
+        REGULARINCOME,
+        ALL
     }
 
     private Date date;

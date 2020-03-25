@@ -72,6 +72,7 @@ public class TransactionListAdapter extends ArrayAdapter<Transaction> {
 
 
     public void setTransactions(ArrayList<Transaction> transactions) {
+        super.clear();
         this.addAll(transactions);
     }
 

@@ -6,12 +6,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         adapter = new TransactionListAdapter(getApplicationContext(), R.layout.list_element, new ArrayList<Transaction>());
         transactionList = (ListView) findViewById(R.id.transactionList);
         transactionList.setAdapter(adapter);
-        getPresenter().refreshTransactions();
+        getPresenter().refreshTransactions(null, "Price - Ascending");
         init();
         fillSpinners();
 
@@ -59,17 +57,20 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
 
     private void fillSpinners() {
         //filterBy
-        ArrayList<String> filterList = new ArrayList<>();
-        filterList.add(Transaction.Type.INDIVIDUALINCOME.toString());
-        filterList.add(Transaction.Type.INDIVIDUALPAYMENT.toString());
-        ArrayAdapter<String> filterArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, filterList);
+        ArrayList<Transaction.Type> filterList = new ArrayList<>();
+        filterList.add(Transaction.Type.ALL);
+        filterList.add(Transaction.Type.INDIVIDUALINCOME);
+        filterList.add(Transaction.Type.INDIVIDUALPAYMENT);
+        filterList.add(Transaction.Type.PURCHASE);
+        filterList.add(Transaction.Type.REGULARINCOME);
+        filterList.add(Transaction.Type.REGULARPAYMENT);
+        ArrayAdapter<Transaction.Type> filterArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, filterList);
         filterArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         filterBySpinner.setAdapter(filterArrayAdapter);
         filterBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String tutorialsName = parent.getItemAtPosition(position).toString();
-                Toast.makeText(parent.getContext(), "Selected: " + tutorialsName, Toast.LENGTH_LONG).show();
+                getPresenter().refreshTransactions((Transaction.Type)parent.getItemAtPosition(position), sortBySpinner.getSelectedItem().toString());
             }
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
@@ -92,8 +93,8 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         sortBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String tutorialsName = parent.getItemAtPosition(position).toString();
-                Toast.makeText(parent.getContext(), "Selected: " + tutorialsName, Toast.LENGTH_LONG).show();
+                //getPresenter().sak();
+                getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), parent.getItemAtPosition(position).toString());
             }
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
