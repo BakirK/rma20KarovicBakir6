@@ -3,4 +3,6 @@
     <string name="Global">Global amount:</string>
     <string name="limit">Limit:</string>
     <string name="UnknownValue">xxxx</string>
+    <string name="filterBy">Filter by:</string>
+    <string name="filter_by">Filter by:</string>
 </resources>
