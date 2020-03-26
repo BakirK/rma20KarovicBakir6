@@ -2,8 +2,8 @@ package ba.unsa.etf.rma.spirala;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         getPresenter().refreshTransactions(null, "Price - Ascending", d);
         init();
         fillSpinners();
-        initDateListeners();
+        initListeners();
     }
 
     private void init() {
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         dateText.setText(d.toString());
     }
 
-    private void initDateListeners() {
+    private void initListeners() {
         prevBtn.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(d);
@@ -79,6 +79,37 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
             dateText.setText(d.toString());
             getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
         });
+
+        AdapterView.OnItemClickListener listItemClickListener = (parent, view, position, id) -> {
+            Intent transactionDetailIntent = new Intent(MainActivity.this, TransactionDetailActivity.class);
+            Transaction transaction = adapter.getTransactionAt(position);
+
+            /*transactionDetailIntent.putExtra("AMOUNT", transaction.getAmount().toString());
+            transactionDetailIntent.putExtra("TITLE", transaction.getTitle());
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(transaction.getDate());
+            transactionDetailIntent.putExtra("DATE_YEAR", calendar.get(Calendar.YEAR));
+            transactionDetailIntent.putExtra("DATE_MONTH", calendar.get(Calendar.MONTH));
+            transactionDetailIntent.putExtra("DATE_DAY", calendar.get(Calendar.DAY_OF_MONTH));
+
+            transactionDetailIntent.putExtra("ITEM_DESCRIPTION", transaction.getItemDescription() == null ? "" : transaction.getTransactionInterval());
+            transactionDetailIntent.putExtra("TYPE", transaction.getType().toString());
+            transactionDetailIntent.putExtra("INTERVAL", transaction.getTransactionInterval() == null ? "" : transaction.getTransactionInterval().toString());
+            if(transaction.getEndDate() != null) {
+                calendar.setTime(transaction.getEndDate());
+                transactionDetailIntent.putExtra("END_DATE_YEAR", calendar.get(Calendar.YEAR));
+                transactionDetailIntent.putExtra("END_DATE_MONTH", calendar.get(Calendar.MONTH));
+                transactionDetailIntent.putExtra("END_DATE_DAY", calendar.get(Calendar.DAY_OF_MONTH));
+            } else {
+                transactionDetailIntent.putExtra("END_DATE_YEAR", "");
+                transactionDetailIntent.putExtra("END_DATE_MONTH", "");
+                transactionDetailIntent.putExtra("END_DATE_DAY", "");
+            }*/
+            transactionDetailIntent.putExtra("TRANSACTION", transaction);
+            MainActivity.this.startActivity(transactionDetailIntent);
+        };
+
+        transactionList.setOnItemClickListener(listItemClickListener);
     }
 
     private void fillSpinners() {

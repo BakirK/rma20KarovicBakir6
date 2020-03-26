@@ -5,4 +5,14 @@
     <string name="UnknownValue">xxxx</string>
     <string name="filterBy">Filter by:</string>
     <string name="filter_by">Filter by:</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="transaction_interval">Transaction Interval</string>
+    <string name="item_description">Item Description</string>
+    <string name="title">Title</string>
+    <string name="amount">Amount</string>
+    <string name="date">Date:</string>
+    <string name="textview">TextView</string>
+    <string name="end_date">End Date:</string>
+    <string name="sort_by">Sort by:</string>
 </resources>
