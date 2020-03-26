@@ -12,9 +12,11 @@
         android:layout_height="40dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="31dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="@string/amount"
+        android:text="@string/textview"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/icon"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
@@ -55,7 +57,7 @@
         android:layout_marginTop="24dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="@string/title"
+        android:text="@string/textview"
         app:layout_constraintStart_toEndOf="@+id/icon"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -65,10 +67,10 @@
         android:layout_height="44dp"
         android:layout_marginStart="50dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="50dp"
+        android:layout_marginEnd="31dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="@string/item_description"
+        android:text="@string/textview"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -80,10 +82,10 @@
         android:layout_height="44dp"
         android:layout_marginStart="50dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="50dp"
+        android:layout_marginEnd="31dp"
         android:ems="10"
         android:inputType="number"
-        android:text="@string/transaction_interval"
+        android:text="@string/textview"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -102,7 +104,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:layout_marginEnd="100dp"
+        android:layout_marginEnd="80dp"
         android:text="@string/date"
         app:layout_constraintEnd_toStartOf="@+id/dateText"
         app:layout_constraintTop_toBottomOf="@+id/spinner" />
@@ -121,10 +123,12 @@
         android:id="@+id/endDateTextLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="32dp"
-        android:layout_marginEnd="100dp"
+        android:layout_marginEnd="80dp"
         android:text="@string/end_date"
         app:layout_constraintEnd_toStartOf="@+id/endDateText"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dateText" />
 
     <TextView

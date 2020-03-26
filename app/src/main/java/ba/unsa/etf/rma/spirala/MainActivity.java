@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -11,7 +12,9 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,7 +39,6 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         adapter = new TransactionListAdapter(getApplicationContext(), R.layout.list_element, new ArrayList<Transaction>());
         transactionList = (ListView) findViewById(R.id.transactionList);
         transactionList.setAdapter(adapter);
@@ -47,18 +49,28 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         initListeners();
     }
 
+    @Override
+    public void onBackPressed() {
+        if(!getIntent().getAction().equals(Intent.ACTION_DEFAULT)) {
+            super.onBackPressed();
+        } else {
+            Toast.makeText(this, "Prethodna transakcija je izbrisana!", Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void init() {
         textViewAmount = (TextView) findViewById(R.id.textViewAmount);
         textViewLimit = (TextView) findViewById(R.id.textViewLimit);
         dateText = (TextView) findViewById(R.id.dateText);
-        filterBySpinner = findViewById(R.id.sortBySpinner);
-        sortBySpinner = findViewById(R.id.filterBySpinner);
+        filterBySpinner = findViewById(R.id.filterBySpinner);
+        sortBySpinner = findViewById(R.id.sortBySpinner);
         nextBtn = (ImageButton) findViewById(R.id.nextBtn);
         prevBtn = (ImageButton) findViewById(R.id.prevBtn);
         account = presenter.getAccount();
         textViewAmount.setText(Double.toString(account.getBudget()));
         textViewLimit.setText(Double.toString(account.getMonthLimit()));
-        dateText.setText(d.toString());
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+        dateText.setText(format.format(d));
     }
 
     private void initListeners() {
@@ -67,7 +79,8 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
             calendar.setTime(d);
             calendar.add(Calendar.MONTH, -1);
             d = calendar.getTime();
-            dateText.setText(d.toString());
+            SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+            dateText.setText(format.format(d));
             getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
         });
 
@@ -76,7 +89,8 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
             calendar.setTime(d);
             calendar.add(Calendar.MONTH, 1);
             d = calendar.getTime();
-            dateText.setText(d.toString());
+            SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+            dateText.setText(format.format(d));
             getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
         });
 
@@ -123,10 +137,6 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         filterList.add(Transaction.Type.REGULARPAYMENT);
         spinnerAdapter = new TransactionSpinnerAdapter(getApplicationContext(), R.layout.spinner_element, filterList);
         filterBySpinner.setAdapter(spinnerAdapter);
-
-        /*ArrayAdapter<Transaction.Type> filterArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, filterList);
-        filterArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        filterBySpinner.setAdapter(filterArrayAdapter);*/
         filterBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {

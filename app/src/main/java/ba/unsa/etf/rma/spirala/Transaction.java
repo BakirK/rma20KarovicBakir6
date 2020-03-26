@@ -31,6 +31,7 @@ public class Transaction implements Parcelable {
             endDate = new Date(in.readLong());
         }
         type = Enum.valueOf(Transaction.Type.class, in.readString());
+        id = in.readInt();
     }
 
     public static final Creator<Transaction> CREATOR = new Creator<Transaction>() {
@@ -75,6 +76,7 @@ public class Transaction implements Parcelable {
             dest.writeLong(endDate.getTime());
         }
         dest.writeString(type.toString());
+        dest.writeInt(id);
     }
 
     public enum Type {
@@ -85,7 +87,9 @@ public class Transaction implements Parcelable {
         REGULARINCOME,
         ALL
     }
+    private static int sequence = 1;
 
+    private int id;
     private Date date;
     private Double amount;
     private String title;
@@ -96,6 +100,8 @@ public class Transaction implements Parcelable {
 
     public Transaction(Date date, Double amount, String title, Type type, @Nullable String itemDescription,
                        @Nullable Integer transactionInterval, @Nullable Date endDate) {
+        this.id = sequence;
+        sequence += 1;
         this.date = date;
         this.amount = amount;
         this.title = title;
@@ -117,7 +123,8 @@ public class Transaction implements Parcelable {
         }
     }
 
-    public Transaction() {
+    public int getId() {
+        return id;
     }
 
     public Date getDate() {
@@ -175,8 +182,5 @@ public class Transaction implements Parcelable {
     public void setType(Type type) {
         this.type = type;
     }
-
-
-
 
 }
