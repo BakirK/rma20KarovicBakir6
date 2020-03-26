@@ -50,6 +50,12 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     }
 
     @Override
+    protected void onResume() {
+        getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+        super.onResume();
+    }
+
+    @Override
     public void onBackPressed() {
         if(!getIntent().getAction().equals(Intent.ACTION_DEFAULT)) {
             super.onBackPressed();

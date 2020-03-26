@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.spirala;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,8 +54,10 @@ public class TransactionListPresenter implements ITransactionListPresenter {
 
         if(d != null){
             ArrayList<Transaction> result = new ArrayList<>();
+            Log.d("Naziv", "BEGIN");
             for (Transaction transaction: transactions) {
                 if(isIndividualPayment(transaction.getType())) {
+                    Log.d("Naziv", transaction.getTitle());
                     calendar.setTime(transaction.getDate());
                     int year = calendar.get(Calendar.YEAR), month = calendar.get(Calendar.MONTH) + 1;
                     if(year == yearNow && month == monthNow) {

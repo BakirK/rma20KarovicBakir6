@@ -1,9 +1,13 @@
 package ba.unsa.etf.rma.spirala;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -12,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,7 +43,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
     private ImageView icon;
     private TransactionSpinnerAdapter spinnerAdapter;
     private Spinner typeSpinner;
-    private Date inputDate;
+    private Date inputDate, inputEndDate;
     boolean endDateDialog;
     boolean preventFirstFire;
     private ITransactionDetailPresenter presenter;
@@ -52,6 +57,8 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         preventFirstFire = true;
         initFields();
         Transaction t = (Transaction) getIntent().getParcelableExtra("TRANSACTION");
+        inputDate = t.getDate();
+        if(t.getEndDate() != null) inputEndDate = t.getEndDate();
         transactionID = t.getId();
         fillSpinner(t.getType());
         refreshFields(t);
@@ -66,7 +73,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
             itemDescription.setText(transaction.getItemDescription());
         }
         if(transaction.getTransactionInterval() != null) {
-            transactionInterval.setText(transaction.getItemDescription());
+            transactionInterval.setText(transaction.getTransactionInterval().toString());
         }
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         dateText.setText(format.format(transaction.getDate()));
@@ -95,7 +102,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         endDateText.setOnClickListener(v -> {
             endDateDialog = true;
             try {
-                if(endDateText.getText().equals("TextView")) {
+                if(endDateText.getText().equals("NOT SELECTED")) {
                     showDatePickerDialog(new Date());
                 } else {
                     SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
@@ -117,10 +124,115 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         });
 
         deleteBtn.setOnClickListener(v -> {
-            getPresenter().deleteTransaction(transactionID);
-            Intent deleteTransaction = new Intent(TransactionDetailActivity.this, MainActivity.class);
-            deleteTransaction.setAction(Intent.ACTION_DEFAULT);
-            TransactionDetailActivity.this.startActivity(deleteTransaction);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Are you sure about that?").setTitle("Confirm deletion");
+            builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    getPresenter().deleteTransaction(transactionID);
+                    Intent deleteTransaction = new Intent(TransactionDetailActivity.this, MainActivity.class);
+                    deleteTransaction.setAction(Intent.ACTION_DEFAULT);
+                    TransactionDetailActivity.this.startActivity(deleteTransaction);
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Toast.makeText(TransactionDetailActivity.this, "Deletion cancelled", Toast.LENGTH_LONG).show();
+                }
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
+        });
+
+
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Transaction transaction = (Transaction) getIntent().getParcelableExtra("TRANSACTION");
+
+                transaction.setTitle(title.getText().toString());
+                transaction.setAmount(Double.parseDouble(amount.getText().toString()));
+                transaction.setDate(inputDate);
+                Transaction.Type type = (Transaction.Type)typeSpinner.getSelectedItem();
+                transaction.setType(type);
+                if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.INDIVIDUALINCOME) {
+                    transaction.setItemDescription(null);
+                } else {
+                    transaction.setItemDescription(itemDescription.getText().toString());
+                }
+
+                if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.REGULARPAYMENT) {
+                    transaction.setTransactionInterval(Integer.parseInt(transactionInterval.getText().toString()));
+                    transaction.setEndDate(inputEndDate);
+                } else {
+                    transaction.setTransactionInterval(null);
+                    transaction.setEndDate(null);
+                }
+
+                getPresenter().updateTransaction(transaction);
+                resetBackgroundColor();
+                setIcon(type);
+                Toast.makeText(TransactionDetailActivity.this, "Changes saved", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        amount.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                amount.setBackgroundColor(0xFF228B22);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        title.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                title.setBackgroundColor(0xFF228B22);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        itemDescription.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                itemDescription.setBackgroundColor(0xFF228B22);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        transactionInterval.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                transactionInterval.setBackgroundColor(0xFF228B22);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
         });
     }
 
@@ -135,6 +247,16 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
                 c.get(Calendar.DAY_OF_MONTH)
         );
         datePickerDialog.show();
+    }
+
+    private void resetBackgroundColor() {
+        endDateText.setBackgroundColor(0x00228B22);
+        dateText.setBackgroundColor(0x00228B22);
+        typeSpinner.setBackgroundColor(0x00228B22);
+        amount.setBackgroundColor(0x00228B22);
+        title.setBackgroundColor(0x00228B22);
+        transactionInterval.setBackgroundColor(0x00228B22);
+        itemDescription.setBackgroundColor(0x00228B22);
     }
 
 
@@ -152,6 +274,9 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         deleteBtn = (Button) findViewById(R.id.deleteBtn);
         icon = (ImageView) findViewById(R.id.icon);
         typeSpinner = (Spinner) findViewById(R.id.spinner);
+
+        inputDate = null;
+        inputEndDate = null;
     }
 
     private void showHide(Transaction.Type type) {
@@ -214,12 +339,13 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
         Calendar calendar = new GregorianCalendar();
         calendar.set(year, month, dayOfMonth);
-        inputDate = new Date(calendar.getTimeInMillis());
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         if(endDateDialog) {
-            endDateText.setText(format.format(inputDate));
+            inputEndDate = new Date(calendar.getTimeInMillis());
+            endDateText.setText(format.format(inputEndDate));
             endDateText.setBackgroundColor(0xFF228B22);
         } else {
+            inputDate = new Date(calendar.getTimeInMillis());
             dateText.setText(format.format(inputDate));
             dateText.setBackgroundColor(0xFF228B22);
         }

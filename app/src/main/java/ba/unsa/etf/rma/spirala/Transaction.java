@@ -163,7 +163,7 @@ public class Transaction implements Parcelable {
         return transactionInterval;
     }
 
-    public void setTransactionInterval(int transactionInterval) {
+    public void setTransactionInterval(Integer transactionInterval) {
         this.transactionInterval = transactionInterval;
     }
 

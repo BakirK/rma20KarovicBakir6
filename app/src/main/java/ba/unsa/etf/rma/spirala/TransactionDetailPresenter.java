@@ -21,11 +21,25 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
         for (Transaction transaction : transactions) {
             if(transaction.getId() == id) {
                 interactor.remove(i);
-                Log.d("INDEX:", Integer.toString(i));
                 return;
             }
             i++;
         }
 
+    }
+
+    @Override
+    public void updateTransaction(Transaction updatedTransaction) {
+        ArrayList<Transaction> transactions = interactor.get();
+        int i = 0;
+        int id = updatedTransaction.getId();
+        for (Transaction transaction : transactions) {
+            if(transaction.getId() == id) {
+                interactor.set(i, updatedTransaction);
+                //Log.d("INDEX:", Integer.toString(i));
+                return;
+            }
+            i++;
+        }
     }
 }

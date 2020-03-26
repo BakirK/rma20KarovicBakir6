@@ -17,4 +17,9 @@ public class TransactionListInteractor implements ITransactionListInteractor {
     public void remove(int i) {
         TransactionModel.transactions.remove(i);
     }
+
+    @Override
+    public void set(int i, Transaction updatedTransaction) {
+        TransactionModel.transactions.set(i, updatedTransaction);
+    }
 }
