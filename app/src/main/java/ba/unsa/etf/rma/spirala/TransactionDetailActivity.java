@@ -38,6 +38,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
     //private TextView dateTextLabel;
     private TextView endDateText;
     private TextView endDateTextLabel;
+    private TextView transactionIntervalLabel, itemDescriptionLabel;
     private Button saveBtn;
     private Button deleteBtn;
     private ImageView icon;
@@ -47,7 +48,6 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
     boolean endDateDialog;
     boolean preventFirstFire;
     private ITransactionDetailPresenter presenter;
-    int transactionID;
 
 
     @Override
@@ -56,10 +56,10 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         setContentView(R.layout.activity_transaction_detail);
         preventFirstFire = true;
         initFields();
-        Transaction t = (Transaction) getIntent().getParcelableExtra("TRANSACTION");
+        getPresenter().setTransaction((Transaction) getIntent().getParcelableExtra("TRANSACTION"));
+        Transaction t = getPresenter().getTransaction();
         inputDate = t.getDate();
         if(t.getEndDate() != null) inputEndDate = t.getEndDate();
-        transactionID = t.getId();
         fillSpinner(t.getType());
         refreshFields(t);
         initListeners();
@@ -128,7 +128,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
             builder.setMessage("Are you sure about that?").setTitle("Confirm deletion");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    getPresenter().deleteTransaction(transactionID);
+                    getPresenter().deleteTransaction();
                     Intent deleteTransaction = new Intent(TransactionDetailActivity.this, MainActivity.class);
                     deleteTransaction.setAction(Intent.ACTION_DEFAULT);
                     TransactionDetailActivity.this.startActivity(deleteTransaction);
@@ -147,28 +147,42 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Transaction transaction = (Transaction) getIntent().getParcelableExtra("TRANSACTION");
-
-                transaction.setTitle(title.getText().toString());
-                transaction.setAmount(Double.parseDouble(amount.getText().toString()));
-                transaction.setDate(inputDate);
+                if(title.getText().length() < 3 || title.getText().length() > 15) {
+                    Toast.makeText(TransactionDetailActivity.this, "Title must be longer than 15 characters and shorter than 3.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                Double amountDouble;
+                try {
+                    amountDouble = Double.parseDouble(amount.getText().toString());
+                } catch (Exception e) {
+                    Toast.makeText(TransactionDetailActivity.this, "Amount must contain numbers only!", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                Integer interval;
                 Transaction.Type type = (Transaction.Type)typeSpinner.getSelectedItem();
-                transaction.setType(type);
-                if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.INDIVIDUALINCOME) {
-                    transaction.setItemDescription(null);
+                if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.REGULARPAYMENT ) {
+                    try {
+                        interval = Integer.parseInt(transactionInterval.getText().toString());
+                    } catch (Exception e) {
+                        Toast.makeText(TransactionDetailActivity.this, "Interval must contain numbers only!", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                 } else {
-                    transaction.setItemDescription(itemDescription.getText().toString());
+                    interval = null;
                 }
-
-                if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.REGULARPAYMENT) {
-                    transaction.setTransactionInterval(Integer.parseInt(transactionInterval.getText().toString()));
-                    transaction.setEndDate(inputEndDate);
-                } else {
-                    transaction.setTransactionInterval(null);
-                    transaction.setEndDate(null);
+                if(inputEndDate == null) {
+                    Toast.makeText(TransactionDetailActivity.this, "End date not selected. Tap it to select it.", Toast.LENGTH_LONG).show();
+                    return;
                 }
-
-                getPresenter().updateTransaction(transaction);
+                getPresenter().updateParameters(
+                        inputDate,
+                        amountDouble,
+                        title.getText().toString(),
+                        type,
+                        itemDescription.getText().toString(),
+                        interval,
+                        inputEndDate
+                );
                 resetBackgroundColor();
                 setIcon(type);
                 Toast.makeText(TransactionDetailActivity.this, "Changes saved", Toast.LENGTH_LONG).show();
@@ -269,6 +283,8 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         //dateTextLabel = (TextView) findViewById(R.id.dateTextLabel);
         endDateText = (TextView) findViewById(R.id.endDateText);
         endDateTextLabel = (TextView) findViewById(R.id.endDateTextLabel);
+        transactionIntervalLabel = (TextView) findViewById(R.id.transactionIntervalLabel);
+        itemDescriptionLabel = (TextView) findViewById(R.id.itemDescriptionLabel);
 
         saveBtn = (Button) findViewById(R.id.saveBtn);
         deleteBtn = (Button) findViewById(R.id.deleteBtn);
@@ -282,15 +298,19 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
     private void showHide(Transaction.Type type) {
         if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.INDIVIDUALINCOME) {
             itemDescription.setVisibility(View.INVISIBLE);
+            itemDescriptionLabel.setVisibility(View.INVISIBLE);
         } else {
             itemDescription.setVisibility(View.VISIBLE);
+            itemDescriptionLabel.setVisibility(View.VISIBLE);
         }
         if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.REGULARPAYMENT) {
             transactionInterval.setVisibility(View.VISIBLE);
+            transactionIntervalLabel.setVisibility(View.VISIBLE);
             endDateText.setVisibility(View.VISIBLE);
             endDateTextLabel.setVisibility(View.VISIBLE);
         } else {
             transactionInterval.setVisibility(View.INVISIBLE);
+            transactionIntervalLabel.setVisibility(View.INVISIBLE);
             endDateText.setVisibility(View.INVISIBLE);
             endDateTextLabel.setVisibility(View.INVISIBLE);
         }
@@ -313,14 +333,9 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
             }
             i++;
         }
-
-        /*ArrayAdapter<Transaction.Type> filterArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, filterList);
-        filterArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        filterBySpinner.setAdapter(filterArrayAdapter);*/
         typeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //getPresenter().refreshTransactions((Transaction.Type) parent.getItemAtPosition(position), sortBySpinner.getSelectedItem().toString(), d);
                 if(preventFirstFire) {
                     preventFirstFire = false;
                     return;

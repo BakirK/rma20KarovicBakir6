@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">rma20BakirKarovic6</string>
+    <string name="app_name">Bosanski PayPal</string>
     <string name="Global">Global amount:</string>
     <string name="limit">Limit:</string>
     <string name="UnknownValue">xxxx</string>
@@ -11,8 +11,8 @@
     <string name="item_description">Item Description</string>
     <string name="title">Title</string>
     <string name="amount">Amount</string>
-    <string name="date">Date:</string>
+    <string name="date">Date(tap to change):</string>
     <string name="textview">NOT SELECTED</string>
-    <string name="end_date">End Date:</string>
+    <string name="end_date">End Date(tap to change):</string>
     <string name="sort_by">Sort by:</string>
 </resources>
