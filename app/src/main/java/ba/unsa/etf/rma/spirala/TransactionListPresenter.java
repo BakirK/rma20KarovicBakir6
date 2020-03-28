@@ -28,13 +28,6 @@ public class TransactionListPresenter implements ITransactionListPresenter {
         return accountInteractor.getAccount();
     }
 
-    private boolean isIndividualPayment(Transaction.Type t) {
-        return t == Transaction.Type.INDIVIDUALPAYMENT || t == Transaction.Type.INDIVIDUALINCOME || t == Transaction.Type.PURCHASE;
-    }
-
-    private boolean dateOverlapping(Date d, Transaction transaction) {
-        return ((transaction.getEndDate().after(d) || transaction.getEndDate().equals(d)) && (transaction.getDate().before(d) || transaction.getDate().equals(d)));
-    }
 
     @Override
     public void refreshTransactions(Transaction.Type t, String orderBy, Date d) {
@@ -48,35 +41,22 @@ public class TransactionListPresenter implements ITransactionListPresenter {
             }
             transactions = result;
         }
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(d);
-        int yearNow = calendar.get(Calendar.YEAR), monthNow = calendar.get(Calendar.MONTH) + 1, dayNow = calendar.get(Calendar.DAY_OF_MONTH);
-
         if(d != null){
             ArrayList<Transaction> result = new ArrayList<>();
-            Log.d("Naziv", "BEGIN");
+            //Log.d("Naziv", "BEGIN");
             for (Transaction transaction: transactions) {
-                if(isIndividualPayment(transaction.getType())) {
-                    Log.d("Naziv", transaction.getTitle());
-                    calendar.setTime(transaction.getDate());
-                    int year = calendar.get(Calendar.YEAR), month = calendar.get(Calendar.MONTH) + 1;
-                    if(year == yearNow && month == monthNow) {
+                if(Transaction.isIndividual(transaction.getType())) {
+                    if(Transaction.sameMonth(d, transaction.getDate())) {
                         result.add(transaction);
                     }
                 } else {
-                    if(dateOverlapping(d, transaction)) {
+                    if(Transaction.dateOverlapping(d, transaction)) {
                         result.add(transaction);
                     }
                 }
             }
             transactions = result;
         }
-
-
-
-
-
-
 
         if(orderBy.startsWith("Price")) {
             if(orderBy.endsWith("Ascending")) {
@@ -99,5 +79,20 @@ public class TransactionListPresenter implements ITransactionListPresenter {
         }
         view.setTransactions(transactions);
         view.notifyTransactionListDataSetChanged();
+    }
+
+    @Override
+    public double getBudget() {
+        return accountInteractor.getBudget() - transactionInteractor.getTotalAmount();
+    }
+
+    @Override
+    public double getTotalLimit() {
+        return accountInteractor.getTotalLimit();
+    }
+
+    @Override
+    public double getMonthLimit() {
+        return accountInteractor.getMonthLimit();
     }
 }

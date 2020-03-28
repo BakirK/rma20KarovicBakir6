@@ -122,6 +122,10 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         }
     }
 
+    private void showToast(String text) {
+        Toast.makeText(TransactionDetailActivity.this, text, Toast.LENGTH_LONG).show();
+    }
+
     private void initListeners() {
         endDateText.setOnClickListener(v -> {
             endDateDialog = true;
@@ -164,11 +168,11 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
             @Override
             public void onClick(View v) {
                 if(title.getText().length() < 3 || title.getText().length() > 15) {
-                    Toast.makeText(TransactionDetailActivity.this, "Title must be longer than 15 characters and shorter than 3.", Toast.LENGTH_LONG).show();
+                    showToast("Title must be longer than 3 characters and shorter than 15.");
                     return;
                 }
                 if(amount.getText().toString().isEmpty()) {
-                    Toast.makeText(TransactionDetailActivity.this, "Amount can't be empty.", Toast.LENGTH_LONG).show();
+                    showToast("Amount can't be empty.");
                     return;
                 }
 
@@ -176,7 +180,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
                 try {
                     amountDouble = Double.parseDouble(amount.getText().toString());
                 } catch (Exception e) {
-                    Toast.makeText(TransactionDetailActivity.this, "Amount must contain numbers only!", Toast.LENGTH_LONG).show();
+                    showToast("Amount must contain numbers only!");
                     return;
                 }
                 Integer interval;
@@ -185,46 +189,121 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
                     try {
                         interval = Integer.parseInt(transactionInterval.getText().toString());
                     } catch (Exception e) {
-                        Toast.makeText(TransactionDetailActivity.this, "Interval must contain numbers only!", Toast.LENGTH_LONG).show();
+                        showToast("Interval must contain numbers only!");
                         return;
                     }
                 } else {
                     interval = null;
                 }
                 if(inputDate == null) {
-                    Toast.makeText(TransactionDetailActivity.this, "Date not selected. Tap it to select it.", Toast.LENGTH_LONG).show();
+                    showToast("Date not selected. Tap it to select it.");
                     return;
                 }
-                if(isRegular(type) &&  inputEndDate == null) {
-                    Toast.makeText(TransactionDetailActivity.this, "End date not selected. Tap it to select it.", Toast.LENGTH_LONG).show();
+                if(Transaction.isRegular(type) &&  inputEndDate == null) {
+                    showToast("End date not selected. Tap it to select it.");
                     return;
                 }
-                if(!isIncome(type) && itemDescription.getText().toString().trim().isEmpty()) {
-                    Toast.makeText(TransactionDetailActivity.this, "Description can't be empty.", Toast.LENGTH_LONG).show();
+                if(!Transaction.isIncome(type) && itemDescription.getText().toString().trim().isEmpty()) {
+                    showToast("Description can't be empty.");
                     return;
                 }
-                getPresenter().updateParameters(
+                if(Transaction.isRegular(type)) {
+                    if(inputEndDate.before(inputDate)) {
+                        showToast("End date must be after start date.");
+                        return;
+                    }
+                    else if(inputEndDate.equals(inputDate)) {
+                        showToast("End date can't be same as start date.");
+                        return;
+                    }
+                    else if (Transaction.getDaysBetween(inputDate, inputEndDate) < interval) {
+                        showToast("Interval can't be bigger than days difference between two dates.");
+                        return;
+                    }
+                }
+                boolean overMonthLimit = presenter.overMonthLimit(
                         inputDate,
                         amountDouble,
                         title.getText().toString(),
                         type,
                         itemDescription.getText().toString(),
                         interval,
-                        inputEndDate
-                );
-                if(getIntent().getAction().equals(Intent.ACTION_ATTACH_DATA)) {
-                    resetBackgroundColor();
-                    setIcon(type);
-                    Toast.makeText(TransactionDetailActivity.this, "Changes saved", Toast.LENGTH_LONG).show();
+                        inputEndDate);
+                boolean overGlobalLimit = presenter.overGlobalLimit(
+                        inputDate,
+                        amountDouble,
+                        title.getText().toString(),
+                        type,
+                        itemDescription.getText().toString(),
+                        interval,
+                        inputEndDate);
+                if(overGlobalLimit || overMonthLimit) {
+                    String text = "Total expenses are over ";
+                    if(overMonthLimit) {
+                        text += "monthly limit ";
+                        if(overGlobalLimit) {
+                            text += "and global limit";
+                        }
+                    } else if(overGlobalLimit) {
+                        text += "global limit";
+                    }
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(TransactionDetailActivity.this);
+                    builder.setMessage("Continue anyway?").setTitle(text);
+                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            getPresenter().updateParameters(
+                                    inputDate,
+                                    amountDouble,
+                                    title.getText().toString(),
+                                    type,
+                                    itemDescription.getText().toString(),
+                                    interval,
+                                    inputEndDate
+                            );
+                            if(getIntent().getAction().equals(Intent.ACTION_ATTACH_DATA)) {
+                                resetBackgroundColor();
+                                setIcon(type);
+                                Toast.makeText(TransactionDetailActivity.this, "Changes saved", Toast.LENGTH_LONG).show();
+                            } else {
+                                Intent openMainActivityIntent = new Intent(TransactionDetailActivity.this, MainActivity.class);
+                                openMainActivityIntent.setAction(Intent.ACTION_INSERT);
+                                TransactionDetailActivity.this.startActivity(openMainActivityIntent);
+                            }
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            showToast("Saving cancelled");
+                        }
+                    });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+
                 } else {
-                    Intent openMainActivityIntent = new Intent(TransactionDetailActivity.this, MainActivity.class);
-                    openMainActivityIntent.setAction(Intent.ACTION_INSERT);
-                    TransactionDetailActivity.this.startActivity(openMainActivityIntent);
+                    getPresenter().updateParameters(
+                            inputDate,
+                            amountDouble,
+                            title.getText().toString(),
+                            type,
+                            itemDescription.getText().toString(),
+                            interval,
+                            inputEndDate
+                    );
+                    if(getIntent().getAction().equals(Intent.ACTION_ATTACH_DATA)) {
+                        resetBackgroundColor();
+                        setIcon(type);
+                        Toast.makeText(TransactionDetailActivity.this, "Changes saved", Toast.LENGTH_LONG).show();
+                    } else {
+                        Intent openMainActivityIntent = new Intent(TransactionDetailActivity.this, MainActivity.class);
+                        openMainActivityIntent.setAction(Intent.ACTION_INSERT);
+                        TransactionDetailActivity.this.startActivity(openMainActivityIntent);
+                    }
                 }
+
 
             }
         });
-
 
 
         amount.addTextChangedListener(new TextWatcher() {
@@ -286,13 +365,6 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
             public void afterTextChanged(Editable s) {
             }
         });
-    }
-
-    private boolean isIncome(Transaction.Type type) {
-        return type == Transaction.Type.INDIVIDUALINCOME || type == Transaction.Type.INDIVIDUALPAYMENT;
-    }
-    private boolean isRegular(Transaction.Type type) {
-        return type == Transaction.Type.REGULARPAYMENT || type == Transaction.Type.REGULARINCOME;
     }
 
     private void showDatePickerDialog(Date d) {

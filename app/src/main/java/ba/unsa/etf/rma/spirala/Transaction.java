@@ -5,7 +5,9 @@ import android.os.Parcelable;
 
 import androidx.annotation.Nullable;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class Transaction implements Parcelable {
     private int mData;
@@ -45,6 +47,20 @@ public class Transaction implements Parcelable {
             return new Transaction[size];
         }
     };
+
+    public static boolean sameMonth(Date dateNow, Date transactionDate) {
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(dateNow);
+        int yearNow = calendar.get(Calendar.YEAR), monthNow = calendar.get(Calendar.MONTH) + 1;
+        calendar.setTime(transactionDate);
+        int transactionYear = calendar.get(Calendar.YEAR), transactionMonth = calendar.get(Calendar.MONTH) + 1;
+        return yearNow == transactionYear && monthNow == transactionMonth;
+    }
+
+    public static boolean dateOverlapping(Date d, Transaction transaction) {
+        return ((transaction.getEndDate().after(d) || transaction.getEndDate().equals(d)) && (transaction.getDate().before(d) || transaction.getDate().equals(d)));
+
+    }
 
     @Override
     public int describeContents() {
@@ -181,6 +197,57 @@ public class Transaction implements Parcelable {
 
     public void setType(Type type) {
         this.type = type;
+    }
+
+    public static boolean isIncome(Transaction.Type type) {
+        return type == Transaction.Type.INDIVIDUALINCOME || type == Type.REGULARINCOME;
+    }
+    public static boolean isRegular(Transaction.Type type) {
+        return type == Transaction.Type.REGULARPAYMENT || type == Transaction.Type.REGULARINCOME;
+    }
+    public static boolean isIndividual(Transaction.Type t) {
+        return t == Transaction.Type.INDIVIDUALPAYMENT || t == Transaction.Type.INDIVIDUALINCOME || t == Transaction.Type.PURCHASE;
+    }
+
+    public static int getDaysBetween(Date sDateIn, Date eDateIn) {
+        Calendar sDate = toCalendar(sDateIn.getTime());
+        Calendar eDate = toCalendar(eDateIn.getTime());
+
+        // Get the represented date in milliseconds
+        long milis1 = sDate.getTimeInMillis();
+        long milis2 = eDate.getTimeInMillis();
+
+        // Calculate difference in milliseconds
+        long diff = Math.abs(milis2 - milis1);
+
+        return (int)(diff / (24 * 60 * 60 * 1000));
+    }
+
+    private static Calendar toCalendar(long timestamp)
+    {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timestamp);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar;
+    }
+
+    public static int monthsBetween(Date a, Date b) {
+        Calendar cal = Calendar.getInstance();
+        if (a.before(b)) {
+            cal.setTime(a);
+        } else {
+            cal.setTime(b);
+            b = a;
+        }
+        int c = 0;
+        while (cal.getTime().before(b)) {
+            cal.add(Calendar.MONTH, 1);
+            c++;
+        }
+        return c - 1;
     }
 
 }

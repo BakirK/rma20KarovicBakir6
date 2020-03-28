@@ -11,6 +11,8 @@ public interface ITransactionDetailPresenter {
     void deleteTransaction();
     void setTransaction(Transaction t);
     Transaction getTransaction();
-    boolean checkMonthlyBudget();
-    boolean checkTotalBudget();
+    boolean overMonthLimit(Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription,
+                            @Nullable Integer transactionInterval, @Nullable Date endDate);
+    boolean overGlobalLimit(Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription,
+                            @Nullable Integer transactionInterval, @Nullable Date endDate);
 }

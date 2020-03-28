@@ -6,26 +6,30 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class TransactionDetailPresenter implements ITransactionDetailPresenter {
-    private ITransactionListInteractor interactor;
+    private ITransactionListInteractor transactionInteractor;
+    private IAccountInteractor accountInteractor;
     private Context context;
     private Transaction transaction;
 
     public TransactionDetailPresenter(Context context) {
-        interactor = new TransactionListInteractor();
+        transactionInteractor = new TransactionListInteractor();
+        accountInteractor = new AccountInteractor();
         this.context = context;
     }
 
     @Override
     public void deleteTransaction() {
         int id = transaction.getId();
-        ArrayList<Transaction> transactions = interactor.get();
+        ArrayList<Transaction> transactions = transactionInteractor.get();
         int i = 0;
         for (Transaction transaction : transactions) {
             if(transaction.getId() == id) {
-                interactor.remove(i);
+                transactionInteractor.remove(i);
                 return;
             }
             i++;
@@ -33,12 +37,12 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     }
 
     private void updateTransaction() {
-        ArrayList<Transaction> transactions = interactor.get();
+        ArrayList<Transaction> transactions = transactionInteractor.get();
         int i = 0;
         int id = this.transaction.getId();
         for (Transaction t : transactions) {
             if(t.getId() == id) {
-                interactor.set(i, this.transaction);
+                transactionInteractor.set(i, this.transaction);
                 Log.d("set", "index" + Integer.toString(i));
                 return;
             }
@@ -58,20 +62,68 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     }
 
     @Override
-    public boolean checkMonthlyBudget() {
-        return false;
+    public boolean overMonthLimit(Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
+        Double thisAmount = 0.;
+        if(this.transaction != null) {
+            if(Transaction.isIncome(this.transaction.getType())) {
+                thisAmount = -this.transaction.getAmount();
+            } else {
+                thisAmount = this.transaction.getAmount();
+            }
+            if(Transaction.isRegular(transaction.getType())) {
+                int monthsBetween = Transaction.monthsBetween(transaction.getDate(), transaction.getEndDate());
+                int daysBetween = Transaction.getDaysBetween(transaction.getDate(), transaction.getEndDate());
+                int averageNumberOfDaysPerMonth = daysBetween/(monthsBetween+1);
+                thisAmount = thisAmount * averageNumberOfDaysPerMonth / transaction.getTransactionInterval();
+            }
+        }
+
+        if(Transaction.isIncome(type)) {
+            amount *= -1;
+        }
+
+        if(Transaction.isRegular(type)) {
+            int monthsBetween = Transaction.monthsBetween(date, endDate);
+            int daysBetween = Transaction.getDaysBetween(date, endDate);
+            int averageNumberOfDaysPerMonth = daysBetween/(monthsBetween+1);
+            amount = amount * averageNumberOfDaysPerMonth / transactionInterval;
+        }
+        Double monthExpenses = transactionInteractor.getMonthlyAmount(date) - thisAmount + amount;
+        return accountInteractor.getMonthLimit() < monthExpenses;
     }
 
+
     @Override
-    public boolean checkTotalBudget() {
-        return false;
+    public boolean overGlobalLimit(Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
+        Double thisAmount = 0.;
+        if(this.transaction != null) {
+            if(Transaction.isIncome(this.transaction.getType())) {
+                thisAmount = -this.transaction.getAmount();
+            } else {
+                thisAmount = this.transaction.getAmount();
+            }
+            if(Transaction.isRegular(transaction.getType())) {
+                thisAmount = thisAmount * Transaction.getDaysBetween(transaction.getDate(), transaction.getEndDate());
+            }
+        }
+        if(Transaction.isIncome(type)) {
+            amount *= -1;
+        }
+
+        if(Transaction.isRegular(type)) {
+            amount = amount * Transaction.getDaysBetween(date, endDate);
+        }
+        Double totalExpenses = transactionInteractor.getTotalAmount() - thisAmount + amount;
+        Log.d("total", Double.toString(totalExpenses));
+        Log.d("limit", Double.toString(accountInteractor.getTotalLimit()));
+        return totalExpenses > accountInteractor.getTotalLimit();
     }
 
     @Override
     public void updateParameters(Date date, Double amount, String title, Transaction.Type type, @Nullable String itemDescription,
                                  @Nullable Integer transactionInterval, @Nullable Date endDate) {
         if(this.transaction == null) {
-            this.transaction = interactor.createTransaction(date, amount, title, type, itemDescription, transactionInterval, endDate);
+            this.transaction = transactionInteractor.createTransaction(date, amount, title, type, itemDescription, transactionInterval, endDate);
         } else {
             transaction.setTitle(title);
             transaction.setAmount(amount);

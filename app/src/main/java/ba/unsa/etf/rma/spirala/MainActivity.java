@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     private Spinner filterBySpinner;
     private Spinner sortBySpinner;
     private ImageButton nextBtn, prevBtn;
-    private Account account;
     private Date d;
 
 
@@ -53,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     @Override
     protected void onResume() {
         getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+        textViewAmount.setText(Double.toString(presenter.getBudget()));
         if(getIntent().getAction().equals(Intent.ACTION_INSERT)) {
             Toast.makeText(this, "Transaction added.", Toast.LENGTH_LONG).show();
         }
@@ -76,9 +76,8 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         sortBySpinner = findViewById(R.id.sortBySpinner);
         nextBtn = (ImageButton) findViewById(R.id.nextBtn);
         prevBtn = (ImageButton) findViewById(R.id.prevBtn);
-        account = presenter.getAccount();
-        textViewAmount.setText(Double.toString(account.getBudget()));
-        textViewLimit.setText(Double.toString(account.getMonthLimit()));
+        textViewAmount.setText(Double.toString(presenter.getBudget()));
+        textViewLimit.setText(Double.toString(presenter.getMonthLimit()));
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         dateText.setText(format.format(d));
     }

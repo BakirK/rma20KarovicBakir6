@@ -20,4 +20,19 @@ public class AccountInteractor implements IAccountInteractor {
     public void setMonthLimit(double d) {
         AccountModel.account.setMonthLimit(d);
     }
+
+    @Override
+    public double getBudget() {
+        return AccountModel.account.getBudget();
+    }
+
+    @Override
+    public double getTotalLimit() {
+        return AccountModel.account.getTotalLimit();
+    }
+
+    @Override
+    public double getMonthLimit() {
+        return AccountModel.account.getMonthLimit();
+    }
 }

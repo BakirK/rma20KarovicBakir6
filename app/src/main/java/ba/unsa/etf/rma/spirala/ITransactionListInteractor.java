@@ -12,4 +12,7 @@ public interface ITransactionListInteractor {
     void set(int i, Transaction updatedTransaction);
     Transaction createTransaction(Date date, Double amount, String title, Transaction.Type type, @Nullable String itemDescription,
                           @Nullable Integer transactionInterval, @Nullable Date endDate);
+    Double getTotalAmount();
+    Double getMonthlyAmount(Date date);
 }
+
