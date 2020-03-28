@@ -40,12 +40,11 @@
         android:id="@+id/textViewLimit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="53dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="240dp"
         android:text="@string/UnknownValue"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textView2"
-        tools:layout_editor_absoluteY="51dp" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewAmount" />
 
     <Spinner
         android:id="@+id/sortBySpinner"
@@ -135,7 +134,7 @@
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="35dp"
+        android:layout_marginStart="40dp"
         android:layout_marginTop="51dp"
         android:text="@string/monthly_limit"
         app:layout_constraintStart_toEndOf="@+id/textViewLimit"
@@ -145,10 +144,10 @@
         android:id="@+id/monthlyLimit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
         android:layout_marginTop="51dp"
+        android:layout_marginEnd="40dp"
         android:text="@string/UnknownValue"
-        app:layout_constraintStart_toEndOf="@+id/textView5"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
