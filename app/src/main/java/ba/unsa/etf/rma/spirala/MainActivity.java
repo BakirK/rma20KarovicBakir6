@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.spirala;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Notification;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -52,6 +53,9 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     @Override
     protected void onResume() {
         getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+        if(getIntent().getAction().equals(Intent.ACTION_INSERT)) {
+            Toast.makeText(this, "Transaction added.", Toast.LENGTH_LONG).show();
+        }
         super.onResume();
     }
 
@@ -102,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
 
         AdapterView.OnItemClickListener listItemClickListener = (parent, view, position, id) -> {
             Intent transactionDetailIntent = new Intent(MainActivity.this, TransactionDetailActivity.class);
+            transactionDetailIntent.setAction(Intent.ACTION_ATTACH_DATA);
             Transaction transaction = adapter.getTransactionAt(position);
 
             /*transactionDetailIntent.putExtra("AMOUNT", transaction.getAmount().toString());

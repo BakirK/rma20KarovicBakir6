@@ -56,26 +56,42 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     public Transaction getTransaction() {
         return transaction;
     }
+
+    @Override
+    public boolean checkMonthlyBudget() {
+        return false;
+    }
+
+    @Override
+    public boolean checkTotalBudget() {
+        return false;
+    }
+
     @Override
     public void updateParameters(Date date, Double amount, String title, Transaction.Type type, @Nullable String itemDescription,
                                  @Nullable Integer transactionInterval, @Nullable Date endDate) {
-        transaction.setTitle(title);
-        transaction.setAmount(amount);
-        transaction.setDate(date);
-        transaction.setType(type);
-        if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.INDIVIDUALINCOME) {
-            transaction.setItemDescription(null);
+        if(this.transaction == null) {
+            this.transaction = interactor.createTransaction(date, amount, title, type, itemDescription, transactionInterval, endDate);
         } else {
-            transaction.setItemDescription(itemDescription);
+            transaction.setTitle(title);
+            transaction.setAmount(amount);
+            transaction.setDate(date);
+            transaction.setType(type);
+            if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.INDIVIDUALINCOME) {
+                transaction.setItemDescription(null);
+            } else {
+                transaction.setItemDescription(itemDescription);
+            }
+
+            if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.REGULARPAYMENT) {
+                transaction.setTransactionInterval(transactionInterval);
+                transaction.setEndDate(endDate);
+            } else {
+                transaction.setTransactionInterval(null);
+                transaction.setEndDate(null);
+            }
+            updateTransaction();
         }
 
-        if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.REGULARPAYMENT) {
-            transaction.setTransactionInterval(transactionInterval);
-            transaction.setEndDate(endDate);
-        } else {
-            transaction.setTransactionInterval(null);
-            transaction.setEndDate(null);
-        }
-        updateTransaction();
     }
 }

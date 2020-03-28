@@ -11,4 +11,6 @@ public interface ITransactionDetailPresenter {
     void deleteTransaction();
     void setTransaction(Transaction t);
     Transaction getTransaction();
+    boolean checkMonthlyBudget();
+    boolean checkTotalBudget();
 }

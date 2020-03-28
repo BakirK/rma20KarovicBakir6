@@ -15,4 +15,5 @@
     <string name="textview">NOT SELECTED</string>
     <string name="end_date">End Date(tap to change):</string>
     <string name="sort_by">Sort by:</string>
+    <string name="add">ADD</string>
 </resources>

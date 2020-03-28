@@ -41,6 +41,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
     private TextView transactionIntervalLabel, itemDescriptionLabel;
     private Button saveBtn;
     private Button deleteBtn;
+    private Button addButton;
     private ImageView icon;
     private TransactionSpinnerAdapter spinnerAdapter;
     private Spinner typeSpinner;
@@ -56,12 +57,19 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         setContentView(R.layout.activity_transaction_detail);
         preventFirstFire = true;
         initFields();
-        getPresenter().setTransaction((Transaction) getIntent().getParcelableExtra("TRANSACTION"));
-        Transaction t = getPresenter().getTransaction();
-        inputDate = t.getDate();
-        if(t.getEndDate() != null) inputEndDate = t.getEndDate();
-        fillSpinner(t.getType());
-        refreshFields(t);
+        if(getIntent().getAction().equals(Intent.ACTION_ATTACH_DATA)) {
+            getPresenter().setTransaction((Transaction) getIntent().getParcelableExtra("TRANSACTION"));
+            Transaction t = getPresenter().getTransaction();
+            inputDate = t.getDate();
+            if(t.getEndDate() != null) inputEndDate = t.getEndDate();
+            fillSpinner(t.getType());
+            refreshFields(t);
+        } else {
+            deleteBtn.setEnabled(false);
+            addButton.setEnabled(false);
+            fillSpinner(null);
+            setEmptyFields();
+        }
         initListeners();
     }
 
@@ -85,6 +93,22 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         setIcon(transaction.getType());
     }
 
+    private void setEmptyFields() {
+        amount.setText("");
+        title.setText("");
+        showHide(Transaction.Type.INDIVIDUALINCOME);
+        itemDescription.setText("");
+        transactionInterval.setText("");
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+        /*dateText.setText(format.format(new Date()));
+        if(transaction.getEndDate() != null) {
+            endDateText.setText(format.format(transaction.getEndDate()));
+        }*/
+
+        //set icon according to transaction type
+        setIcon(Transaction.Type.INDIVIDUALINCOME);
+    }
+
     private void setIcon(Transaction.Type t) {
         String genreMatch = t.toString().toLowerCase();
         try {
@@ -101,26 +125,12 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
     private void initListeners() {
         endDateText.setOnClickListener(v -> {
             endDateDialog = true;
-            try {
-                if(endDateText.getText().equals("NOT SELECTED")) {
-                    showDatePickerDialog(new Date());
-                } else {
-                    SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
-                    showDatePickerDialog(format.parse(endDateText.getText().toString()));
-                }
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            showDatePickerDialog(inputEndDate);
 
         });
         dateText.setOnClickListener(v -> {
             endDateDialog = false;
-            SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
-            try {
-                showDatePickerDialog(format.parse(dateText.getText().toString()));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            showDatePickerDialog(inputDate);
         });
 
         deleteBtn.setOnClickListener(v -> {
@@ -143,6 +153,12 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
             alert.show();
         });
 
+        addButton.setOnClickListener(v -> {
+            Intent addActivity = new Intent(TransactionDetailActivity.this, TransactionDetailActivity.class);
+            addActivity.setAction(Intent.ACTION_DEFAULT);
+            TransactionDetailActivity.this.startActivity(addActivity);
+        });
+
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -151,6 +167,11 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
                     Toast.makeText(TransactionDetailActivity.this, "Title must be longer than 15 characters and shorter than 3.", Toast.LENGTH_LONG).show();
                     return;
                 }
+                if(amount.getText().toString().isEmpty()) {
+                    Toast.makeText(TransactionDetailActivity.this, "Amount can't be empty.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 Double amountDouble;
                 try {
                     amountDouble = Double.parseDouble(amount.getText().toString());
@@ -170,8 +191,16 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
                 } else {
                     interval = null;
                 }
-                if(inputEndDate == null) {
+                if(inputDate == null) {
+                    Toast.makeText(TransactionDetailActivity.this, "Date not selected. Tap it to select it.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                if(isRegular(type) &&  inputEndDate == null) {
                     Toast.makeText(TransactionDetailActivity.this, "End date not selected. Tap it to select it.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                if(!isIncome(type) && itemDescription.getText().toString().trim().isEmpty()) {
+                    Toast.makeText(TransactionDetailActivity.this, "Description can't be empty.", Toast.LENGTH_LONG).show();
                     return;
                 }
                 getPresenter().updateParameters(
@@ -183,11 +212,20 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
                         interval,
                         inputEndDate
                 );
-                resetBackgroundColor();
-                setIcon(type);
-                Toast.makeText(TransactionDetailActivity.this, "Changes saved", Toast.LENGTH_LONG).show();
+                if(getIntent().getAction().equals(Intent.ACTION_ATTACH_DATA)) {
+                    resetBackgroundColor();
+                    setIcon(type);
+                    Toast.makeText(TransactionDetailActivity.this, "Changes saved", Toast.LENGTH_LONG).show();
+                } else {
+                    Intent openMainActivityIntent = new Intent(TransactionDetailActivity.this, MainActivity.class);
+                    openMainActivityIntent.setAction(Intent.ACTION_INSERT);
+                    TransactionDetailActivity.this.startActivity(openMainActivityIntent);
+                }
+
             }
         });
+
+
 
         amount.addTextChangedListener(new TextWatcher() {
             @Override
@@ -250,7 +288,17 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         });
     }
 
+    private boolean isIncome(Transaction.Type type) {
+        return type == Transaction.Type.INDIVIDUALINCOME || type == Transaction.Type.INDIVIDUALPAYMENT;
+    }
+    private boolean isRegular(Transaction.Type type) {
+        return type == Transaction.Type.REGULARPAYMENT || type == Transaction.Type.REGULARINCOME;
+    }
+
     private void showDatePickerDialog(Date d) {
+        if(d == null) {
+            d = new Date();
+        }
         Calendar c = new GregorianCalendar();
         c.setTime(d);
         DatePickerDialog  datePickerDialog = new DatePickerDialog(
@@ -288,6 +336,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
 
         saveBtn = (Button) findViewById(R.id.saveBtn);
         deleteBtn = (Button) findViewById(R.id.deleteBtn);
+        addButton = (Button) findViewById(R.id.addButton);
         icon = (ImageView) findViewById(R.id.icon);
         typeSpinner = (Spinner) findViewById(R.id.spinner);
 
@@ -327,12 +376,16 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
         spinnerAdapter = new TransactionSpinnerAdapter(getApplicationContext(), R.layout.spinner_element, filterList);
         typeSpinner.setAdapter(spinnerAdapter);
         int i = 0;
-        for (Transaction.Type t: filterList) {
-            if(t == type) {
-                typeSpinner.setSelection(i);
+        if(type != null) {
+            for (Transaction.Type t: filterList) {
+                if(t == type) {
+                    typeSpinner.setSelection(i);
+                    break;
+                }
+                i++;
             }
-            i++;
         }
+
         typeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
