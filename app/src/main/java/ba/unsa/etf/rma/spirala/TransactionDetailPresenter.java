@@ -88,7 +88,10 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
             int averageNumberOfDaysPerMonth = daysBetween/(monthsBetween+1);
             amount = amount * averageNumberOfDaysPerMonth / transactionInterval;
         }
+        Log.d("interactor month", transactionInteractor.getMonthlyAmount(date).toString() );
         Double monthExpenses = transactionInteractor.getMonthlyAmount(date) - thisAmount + amount;
+        Log.d("month total", Double.toString(monthExpenses));
+        Log.d("month limit", Double.toString(accountInteractor.getMonthLimit()));
         return accountInteractor.getMonthLimit() < monthExpenses;
     }
 
@@ -114,8 +117,8 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
             amount = amount * Transaction.getDaysBetween(date, endDate);
         }
         Double totalExpenses = transactionInteractor.getTotalAmount() - thisAmount + amount;
-        Log.d("total", Double.toString(totalExpenses));
-        Log.d("limit", Double.toString(accountInteractor.getTotalLimit()));
+        Log.d("global total", Double.toString(totalExpenses));
+        Log.d("global limit", Double.toString(accountInteractor.getTotalLimit()));
         return totalExpenses > accountInteractor.getTotalLimit();
     }
 

@@ -43,23 +43,26 @@ public class TransactionListInteractor implements ITransactionListInteractor {
     public Double getTotalAmount() {
         Double sum = 0.;
         for (Transaction transaction: TransactionModel.transactions) {
+            if(Transaction.isIncome(transaction.getType())) {
+                continue;
+            }
             if(Transaction.isIndividual(transaction.getType())) {
-                if(Transaction.isIncome(transaction.getType())) {
+                /*if(Transaction.isIncome(transaction.getType())) {
                     sum -= transaction.getAmount();
-                } else {
+                } else {*/
                     sum += transaction.getAmount();
-                }
+                //}
             } else {
                 Double thisAmount = transaction.getAmount();
                 int monthsBetween = Transaction.monthsBetween(transaction.getDate(), transaction.getEndDate());
                 int daysBetween = Transaction.getDaysBetween(transaction.getDate(), transaction.getEndDate());
                 int averageNumberOfDaysPerMonth = daysBetween/(monthsBetween+1);
                 thisAmount = thisAmount * averageNumberOfDaysPerMonth / transaction.getTransactionInterval();
-                if(Transaction.isIncome(transaction.getType())) {
+                /*if(Transaction.isIncome(transaction.getType())) {
                     sum -= thisAmount;
-                } else {
+                } else {*/
                     sum += thisAmount;
-                }
+                //}
             }
         }
         return sum;
@@ -70,13 +73,16 @@ public class TransactionListInteractor implements ITransactionListInteractor {
         Double sum = 0.;
         if(date != null){
             for (Transaction transaction: TransactionModel.transactions) {
+                if(Transaction.isIncome(transaction.getType())) {
+                    continue;
+                }
                 if(Transaction.isIndividual(transaction.getType())) {
                     if(Transaction.sameMonth(date, transaction.getDate())) {
-                        if(Transaction.isIncome(transaction.getType())) {
+                        /*if(Transaction.isIncome(transaction.getType())) {
                             sum -= transaction.getAmount();
-                        } else {
+                        } else {*/
                             sum += transaction.getAmount();
-                        }
+                        //}
                     }
                 } else {
                     if(Transaction.dateOverlapping(date, transaction)) {
@@ -85,11 +91,11 @@ public class TransactionListInteractor implements ITransactionListInteractor {
                         int daysBetween = Transaction.getDaysBetween(transaction.getDate(), transaction.getEndDate());
                         int averageNumberOfDaysPerMonth = daysBetween/(monthsBetween+1);
                         thisAmount = thisAmount * averageNumberOfDaysPerMonth / transaction.getTransactionInterval();
-                        if(Transaction.isIncome(transaction.getType())) {
+                        /*if(Transaction.isIncome(transaction.getType())) {
                             sum -= thisAmount;
-                        } else {
+                        } else {*/
                             sum += thisAmount;
-                        }
+                        //}
                     }
                 }
             }

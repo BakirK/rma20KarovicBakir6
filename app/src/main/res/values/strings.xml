@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Bosanski PayPal</string>
     <string name="Global">Global amount:</string>
-    <string name="limit">Limit:</string>
+    <string name="limit">Global limit:</string>
     <string name="UnknownValue">xxxx</string>
     <string name="filterBy">Filter by:</string>
     <string name="filter_by">Filter by:</string>
@@ -16,4 +16,5 @@
     <string name="end_date">End Date(tap to change):</string>
     <string name="sort_by">Sort by:</string>
     <string name="add">ADD</string>
+    <string name="monthly_limit">Monthly limit:</string>
 </resources>

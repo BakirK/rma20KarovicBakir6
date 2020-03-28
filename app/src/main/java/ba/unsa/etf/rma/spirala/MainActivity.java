@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     private TextView textViewAmount;
     private TextView textViewLimit;
     private TextView dateText;
+    private TextView monthlyLimit;
     private Spinner filterBySpinner;
     private Spinner sortBySpinner;
     private ImageButton nextBtn, prevBtn;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     @Override
     protected void onResume() {
         getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
-        textViewAmount.setText(Double.toString(presenter.getBudget()));
+        textViewAmount.setText(String.format("%.2f", getPresenter().getBudget()));
         if(getIntent().getAction().equals(Intent.ACTION_INSERT)) {
             Toast.makeText(this, "Transaction added.", Toast.LENGTH_LONG).show();
         }
@@ -72,12 +73,14 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         textViewAmount = (TextView) findViewById(R.id.textViewAmount);
         textViewLimit = (TextView) findViewById(R.id.textViewLimit);
         dateText = (TextView) findViewById(R.id.dateText);
+        monthlyLimit = (TextView) findViewById(R.id.monthlyLimit);
         filterBySpinner = findViewById(R.id.filterBySpinner);
         sortBySpinner = findViewById(R.id.sortBySpinner);
         nextBtn = (ImageButton) findViewById(R.id.nextBtn);
         prevBtn = (ImageButton) findViewById(R.id.prevBtn);
-        textViewAmount.setText(Double.toString(presenter.getBudget()));
-        textViewLimit.setText(Double.toString(presenter.getMonthLimit()));
+        textViewAmount.setText(String.format("%.2f", getPresenter().getBudget()));
+        textViewLimit.setText(String.format("%.2f", getPresenter().getTotalLimit()));
+        monthlyLimit.setText(String.format("%.2f", getPresenter().getMonthLimit()));
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         dateText.setText(format.format(d));
     }

@@ -8,6 +8,7 @@ import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -185,7 +186,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
                 }
                 Integer interval;
                 Transaction.Type type = (Transaction.Type)typeSpinner.getSelectedItem();
-                if(type == Transaction.Type.REGULARINCOME || type == Transaction.Type.REGULARPAYMENT ) {
+                if(Transaction.isRegular(type)) {
                     try {
                         interval = Integer.parseInt(transactionInterval.getText().toString());
                     } catch (Exception e) {
@@ -221,7 +222,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
                         return;
                     }
                 }
-                boolean overMonthLimit = presenter.overMonthLimit(
+                boolean overMonthLimit = getPresenter().overMonthLimit(
                         inputDate,
                         amountDouble,
                         title.getText().toString(),
@@ -229,7 +230,7 @@ public class TransactionDetailActivity extends AppCompatActivity implements Date
                         itemDescription.getText().toString(),
                         interval,
                         inputEndDate);
-                boolean overGlobalLimit = presenter.overGlobalLimit(
+                boolean overGlobalLimit = getPresenter().overGlobalLimit(
                         inputDate,
                         amountDouble,
                         title.getText().toString(),
