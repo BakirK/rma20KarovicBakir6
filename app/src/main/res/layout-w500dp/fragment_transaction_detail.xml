@@ -4,30 +4,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="horizontal"
     tools:context="ba.unsa.etf.rma.spirala.detail.TransactionDetailFragment">
 
     <EditText
         android:id="@+id/amount"
         android:layout_width="199dp"
         android:layout_height="40dp"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="44dp"
-        android:layout_marginEnd="31dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:ems="10"
         android:inputType="number"
         android:selectAllOnFocus="true"
         android:text="@string/textview"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/icon"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <ImageView
         android:id="@+id/icon"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -35,9 +34,10 @@
         android:id="@+id/saveBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/save"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -45,9 +45,10 @@
         android:id="@+id/deleteBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/delete"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -55,51 +56,48 @@
         android:id="@+id/title"
         android:layout_width="199dp"
         android:layout_height="40dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:ems="10"
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
         android:text="@string/textview"
-        app:layout_constraintStart_toEndOf="@+id/icon"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/itemDescription"
-        android:layout_width="350dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="36dp"
-        android:layout_marginEnd="31dp"
+        android:layout_width="199dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:ems="10"
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
         android:text="@string/textview"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/icon" />
+        app:layout_constraintTop_toBottomOf="@+id/amount" />
 
     <EditText
         android:id="@+id/transactionInterval"
-        android:layout_width="350dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="31dp"
+        android:layout_width="199dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:ems="10"
         android:inputType="number"
         android:selectAllOnFocus="true"
         android:text="@string/textview"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/itemDescription" />
 
     <Spinner
         android:id="@+id/spinner"
-        android:layout_width="409dp"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
         android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/transactionInterval" />
@@ -109,8 +107,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="45dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:text="@string/date"
+        android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner" />
 
@@ -118,9 +117,10 @@
         android:id="@+id/dateText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="80dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="45dp"
         android:text="@string/textview"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner" />
 
@@ -129,8 +129,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="45dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:text="@string/end_date"
+        android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dateText" />
 
@@ -138,9 +139,10 @@
         android:id="@+id/endDateText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="80dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="45dp"
         android:text="@string/textview"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dateText" />
 
@@ -148,41 +150,45 @@
         android:id="@+id/itemDescriptionLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="38dp"
+        android:layout_marginEnd="24dp"
         android:text="@string/item_description"
-        app:layout_constraintBottom_toTopOf="@+id/itemDescription"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/itemDescription"
+        app:layout_constraintTop_toBottomOf="@+id/textView7" />
 
     <TextView
         android:id="@+id/transactionIntervalLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="33dp"
+        android:layout_marginEnd="24dp"
         android:text="@string/transaction_interval"
-        app:layout_constraintBottom_toTopOf="@+id/transactionInterval"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/transactionInterval"
+        app:layout_constraintTop_toBottomOf="@+id/itemDescriptionLabel" />
 
     <TextView
         android:id="@+id/textView7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="17dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="24dp"
         android:text="@string/amount"
-        app:layout_constraintBottom_toTopOf="@+id/amount"
-        app:layout_constraintStart_toEndOf="@+id/icon" />
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/amount"
+        app:layout_constraintTop_toBottomOf="@+id/textView8" />
 
     <TextView
         android:id="@+id/textView8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="17dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="24dp"
         android:text="@string/title"
-        app:layout_constraintBottom_toTopOf="@+id/title"
-        app:layout_constraintStart_toEndOf="@+id/icon" />
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/title"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/addButton"
@@ -190,8 +196,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="45dp"
         android:layout_marginEnd="45dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/add"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/deleteBtn"
         app:layout_constraintStart_toEndOf="@+id/saveBtn" />
