@@ -19,6 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import java.lang.reflect.Field;
@@ -28,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import ba.unsa.etf.rma.spirala.OnItemClick;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.list.MainActivity;
@@ -53,6 +55,8 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
     boolean endDateDialog;
     boolean preventFirstFire;
     private ITransactionDetailPresenter presenter;
+    private OnItemClick onItemClick;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_transaction_detail, container, false);
@@ -78,6 +82,17 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
             getPresenter().setTransaction((Transaction) getActivity().getIntent().getParcelableExtra("TRANSACTION"));
         } else {
         }*/
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        // Restore UI state from the savedInstanceState.
+        // This bundle has also been passed to onCreate.
+        boolean myBoolean = savedInstanceState.getBoolean("MyBoolean");
+        double myDouble = savedInstanceState.getDouble("myDouble");
+        int myInt = savedInstanceState.getInt("MyInt");
+        String myString = savedInstanceState.getString("MyString");
     }
 
     private void refreshFields(Transaction transaction) {
@@ -150,9 +165,11 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     getPresenter().deleteTransaction();
-                    Intent deleteTransaction = new Intent(getActivity(), MainActivity.class);
+                    onItemClick.updateTransactionListData();
+                    onItemClick.displayDeleted();
+                    /*Intent deleteTransaction = new Intent(getActivity(), MainActivity.class);
                     deleteTransaction.setAction(Intent.ACTION_DEFAULT);
-                    getActivity().startActivity(deleteTransaction);
+                    getActivity().startActivity(deleteTransaction);*/
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -165,6 +182,8 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
         });
 
         addButton.setOnClickListener(v -> {
+            //Toast.makeText(getActivity(), "Transaction added.", Toast.LENGTH_LONG).show();
+            onItemClick.displayTransaction(null);
             /*Intent addActivity = new Intent(getActivity(), TransactionDetailActivity.class);
             addActivity.setAction(Intent.ACTION_DEFAULT);
             getActivity().startActivity(addActivity);*/
@@ -268,14 +287,13 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
                                     interval,
                                     inputEndDate
                             );
-                            if(getActivity().getIntent().getAction().equals(Intent.ACTION_ATTACH_DATA)) {
+                            onItemClick.updateTransactionListData();
+                            if (getArguments() != null && getArguments().containsKey("transaction")) {
                                 resetBackgroundColor();
                                 setIcon(type);
                                 Toast.makeText(getActivity(), "Changes saved", Toast.LENGTH_LONG).show();
                             } else {
-                                Intent openMainActivityIntent = new Intent(getActivity(), MainActivity.class);
-                                openMainActivityIntent.setAction(Intent.ACTION_INSERT);
-                                getActivity().startActivity(openMainActivityIntent);
+                                onItemClick.displayAdded();
                             }
                         }
                     });
@@ -297,14 +315,13 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
                             interval,
                             inputEndDate
                     );
-                    if(getActivity().getIntent().getAction().equals(Intent.ACTION_ATTACH_DATA)) {
+                    onItemClick.updateTransactionListData();
+                    if(getArguments() != null && getArguments().containsKey("transaction")) {
                         resetBackgroundColor();
                         setIcon(type);
                         Toast.makeText(getActivity(), "Changes saved", Toast.LENGTH_LONG).show();
                     } else {
-                        Intent openMainActivityIntent = new Intent(getActivity(), MainActivity.class);
-                        openMainActivityIntent.setAction(Intent.ACTION_INSERT);
-                        getActivity().startActivity(openMainActivityIntent);
+                        onItemClick.displayAdded();
                     }
                 }
 
@@ -418,7 +435,11 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
         addButton = (Button) view.findViewById(R.id.addButton);
         icon = (ImageView) view.findViewById(R.id.icon);
         typeSpinner = (Spinner) view.findViewById(R.id.spinner);
-
+        try {
+            onItemClick = (OnItemClick)getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString() + "Treba implementirati OnItemClick interfejs");
+        }
         inputDate = null;
         inputEndDate = null;
     }

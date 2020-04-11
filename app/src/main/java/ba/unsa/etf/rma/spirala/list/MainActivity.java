@@ -4,20 +4,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import ba.unsa.etf.rma.spirala.OnItemClick;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.detail.TransactionDetailFragment;
 
-public class MainActivity extends AppCompatActivity implements TransactionListFragment.OnItemClick {
-
-
+public class MainActivity extends AppCompatActivity implements OnItemClick {
     private boolean twoPaneMode;
-
+    private Fragment listFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
             twoPaneMode = false;
         }
         //Fragment listFragment = fragmentManager.findFragmentByTag("list");
-        Fragment listFragment = fragmentManager.findFragmentById(R.id.transactions_list);
+        listFragment = fragmentManager.findFragmentById(R.id.transactions_list);
         if (listFragment == null){
             listFragment = new TransactionListFragment();
             fragmentManager.beginTransaction()
@@ -57,8 +59,7 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
     @Override
     protected void onResume() {
         //TODO
-       /* getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
-        textViewAmount.setText(String.format("%.2f", getPresenter().getBudget()));
+       /*
         if(getIntent().getAction().equals(Intent.ACTION_INSERT)) {
             Toast.makeText(this, "Transaction added.", Toast.LENGTH_LONG).show();
         }*/
@@ -67,25 +68,88 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
 
     @Override
     public void onBackPressed() {
-        if(!getIntent().getAction().equals(Intent.ACTION_DEFAULT)) {
-            super.onBackPressed();
-        } else {
-            Toast.makeText(this, "Prethodna transakcija je izbrisana!", Toast.LENGTH_LONG).show();
-        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Exit app?").setTitle("Confirmation.");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                MainActivity.this.onBackPressed();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Toast.makeText(MainActivity.this, "Exiting canceled", Toast.LENGTH_LONG).show();
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     @Override
-    public void onItemClicked(Transaction transaction) {
+    public void displayTransaction(Transaction transaction) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable("transaction", transaction);
+        if(transaction != null) {
+            arguments.putParcelable("transaction", transaction);
+        }
         TransactionDetailFragment detailFragment = new TransactionDetailFragment();
         detailFragment.setArguments(arguments);
         if (twoPaneMode){
             getSupportFragmentManager().beginTransaction().replace(R.id.transaction_detail, detailFragment).commit();
         }
         else {
-            getSupportFragmentManager().beginTransaction().replace(R.id.transactions_list,detailFragment).addToBackStack(null).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.transactions_list, detailFragment).addToBackStack("main").commit();
         }
+    }
+
+    @Override
+    public void updateTransactionListData() {
+        ((TransactionListFragment)listFragment).updateTransactionListData();
+    }
+
+    @Override
+    public void displayAdded() {
+        Toast.makeText(this, "Transaction added", Toast.LENGTH_LONG).show();
+        if (twoPaneMode){
+            displayTransaction(null);
+        }
+        else {
+            getSupportFragmentManager().popBackStack("main", getSupportFragmentManager().POP_BACK_STACK_INCLUSIVE);
+        }
+    }
+
+    @Override
+    public void displayDeleted() {
+        Toast.makeText(this, "Transaction deleted", Toast.LENGTH_LONG).show();
+        if (twoPaneMode){
+            displayTransaction(null);
+        }
+        else {
+            getSupportFragmentManager().popBackStack("main", getSupportFragmentManager().POP_BACK_STACK_INCLUSIVE);
+        }
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+        savedInstanceState.putBoolean("MyBoolean", true);
+        savedInstanceState.putDouble("myDouble", 1.9);
+        savedInstanceState.putInt("MyInt", 1);
+        savedInstanceState.putString("MyString", "Welcome back to Android");
+        // etc.
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // Restore UI state from the savedInstanceState.
+        // This bundle has also been passed to onCreate.
+        boolean myBoolean = savedInstanceState.getBoolean("MyBoolean");
+        double myDouble = savedInstanceState.getDouble("myDouble");
+        int myInt = savedInstanceState.getInt("MyInt");
+        String myString = savedInstanceState.getString("MyString");
     }
 }
 

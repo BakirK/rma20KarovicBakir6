@@ -31,17 +31,17 @@
         android:id="@+id/textViewAmount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="565dp"
         android:text="@string/UnknownValue"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textViewLimit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="56dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:text="@string/UnknownValue"
         app:layout_constraintStart_toEndOf="@+id/textView2"
@@ -95,6 +95,7 @@
 
         <ListView
             android:id="@+id/transactionList"
+            android:choiceMode="singleChoice"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="8dp"
@@ -136,7 +137,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="8dp"
         android:text="@string/monthly_limit"
         app:layout_constraintEnd_toStartOf="@+id/monthlyLimit"
         app:layout_constraintTop_toTopOf="parent" />

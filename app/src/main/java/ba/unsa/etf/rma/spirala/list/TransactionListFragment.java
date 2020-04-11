@@ -11,6 +11,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import java.text.SimpleDateFormat;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import ba.unsa.etf.rma.spirala.OnItemClick;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 
@@ -35,6 +37,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     private ImageButton nextBtn, prevBtn;
     private Date d;
     private OnItemClick onItemClick;
+    private Integer previousSelectedItemIndex;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,6 +51,17 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         fillSpinners();
         initListeners();
         return fragmentView;
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        // Restore UI state from the savedInstanceState.
+        // This bundle has also been passed to onCreate.
+        boolean myBoolean = savedInstanceState.getBoolean("MyBoolean");
+        double myDouble = savedInstanceState.getDouble("myDouble");
+        int myInt = savedInstanceState.getInt("MyInt");
+        String myString = savedInstanceState.getString("MyString");
     }
 
     private void init(View fragmentView) {
@@ -69,6 +83,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         } catch (ClassCastException e) {
             throw new ClassCastException(getActivity().toString() + "Treba implementirati OnItemClick interfejs");
         }
+        previousSelectedItemIndex = -1;
     }
 
     private void initListeners() {
@@ -98,8 +113,15 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
             Transaction transaction = adapter.getTransactionAt(position);
             transactionDetailIntent.putExtra("TRANSACTION", transaction);
             MainActivity.this.startActivity(transactionDetailIntent);*/
-            Transaction transaction = adapter.getTransactionAt(position);
-            onItemClick.onItemClicked(transaction);
+            if(previousSelectedItemIndex == position) {
+                onItemClick.displayTransaction(null);
+                previousSelectedItemIndex = -1;
+                getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+            } else {
+                previousSelectedItemIndex = position;
+                Transaction transaction = adapter.getTransactionAt(position);
+                onItemClick.displayTransaction(transaction);
+            }
         };
 
         transactionList.setOnItemClickListener(listItemClickListener);
@@ -170,7 +192,8 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         return presenter;
     }
 
-    public interface OnItemClick {
-        void onItemClicked(Transaction transaction);
+    public void updateTransactionListData() {
+        getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+        textViewAmount.setText(String.format("%.2f", getPresenter().getBudget()));
     }
 }
