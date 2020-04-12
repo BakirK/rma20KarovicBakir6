@@ -67,7 +67,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/itemDescription"
+        android:id="@+id/monthlyLimitText"
         android:layout_width="199dp"
         android:layout_height="40dp"
         android:layout_marginTop="8dp"
@@ -81,7 +81,7 @@
         app:layout_constraintTop_toBottomOf="@+id/amount" />
 
     <EditText
-        android:id="@+id/transactionInterval"
+        android:id="@+id/globalLimitText"
         android:layout_width="199dp"
         android:layout_height="40dp"
         android:layout_marginTop="8dp"
@@ -92,7 +92,7 @@
         android:text="@string/textview"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/itemDescription" />
+        app:layout_constraintTop_toBottomOf="@+id/monthlyLimitText" />
 
     <Spinner
         android:id="@+id/spinner"
@@ -100,7 +100,7 @@
         android:layout_height="40dp"
         android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/transactionInterval" />
+        app:layout_constraintTop_toBottomOf="@+id/globalLimitText" />
 
     <TextView
         android:id="@+id/dateTextLabel"
@@ -147,26 +147,26 @@
         app:layout_constraintTop_toBottomOf="@+id/dateText" />
 
     <TextView
-        android:id="@+id/itemDescriptionLabel"
+        android:id="@+id/monthlyLimitLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="38dp"
         android:layout_marginEnd="24dp"
         android:text="@string/item_description"
         android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/itemDescription"
+        app:layout_constraintEnd_toStartOf="@+id/monthlyLimitText"
         app:layout_constraintTop_toBottomOf="@+id/textView7" />
 
     <TextView
-        android:id="@+id/transactionIntervalLabel"
+        android:id="@+id/globalLimitLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="33dp"
         android:layout_marginEnd="24dp"
         android:text="@string/transaction_interval"
         android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/transactionInterval"
-        app:layout_constraintTop_toBottomOf="@+id/itemDescriptionLabel" />
+        app:layout_constraintEnd_toStartOf="@+id/globalLimitText"
+        app:layout_constraintTop_toBottomOf="@+id/monthlyLimitLabel" />
 
     <TextView
         android:id="@+id/textView7"

@@ -66,7 +66,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/itemDescription"
+        android:id="@+id/monthlyLimitText"
         android:layout_width="350dp"
         android:layout_height="44dp"
         android:layout_marginStart="50dp"
@@ -82,7 +82,7 @@
         app:layout_constraintTop_toBottomOf="@+id/icon" />
 
     <EditText
-        android:id="@+id/transactionInterval"
+        android:id="@+id/globalLimitText"
         android:layout_width="350dp"
         android:layout_height="44dp"
         android:layout_marginStart="50dp"
@@ -95,7 +95,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/itemDescription" />
+        app:layout_constraintTop_toBottomOf="@+id/monthlyLimitText" />
 
     <Spinner
         android:id="@+id/spinner"
@@ -103,7 +103,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/transactionInterval" />
+        app:layout_constraintTop_toBottomOf="@+id/globalLimitText" />
 
     <TextView
         android:id="@+id/dateTextLabel"
@@ -146,23 +146,23 @@
         app:layout_constraintTop_toBottomOf="@+id/dateText" />
 
     <TextView
-        android:id="@+id/itemDescriptionLabel"
+        android:id="@+id/monthlyLimitLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="8dp"
         android:text="@string/item_description"
-        app:layout_constraintBottom_toTopOf="@+id/itemDescription"
+        app:layout_constraintBottom_toTopOf="@+id/monthlyLimitText"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/transactionIntervalLabel"
+        android:id="@+id/globalLimitLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="8dp"
         android:text="@string/transaction_interval"
-        app:layout_constraintBottom_toTopOf="@+id/transactionInterval"
+        app:layout_constraintBottom_toTopOf="@+id/globalLimitText"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView

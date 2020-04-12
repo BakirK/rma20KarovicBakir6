@@ -6,14 +6,15 @@ import androidx.fragment.app.FragmentManager;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import ba.unsa.etf.rma.spirala.OnItemClick;
+import ba.unsa.etf.rma.spirala.graphs.GraphsFragment;
+import ba.unsa.etf.rma.spirala.budget.BudgetFragment;
+import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.R;
+import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.detail.TransactionDetailFragment;
 
@@ -127,6 +128,35 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
         }
     }
 
+    @Override
+    public void displayAccount(Account account) {
+        if (!twoPaneMode){
+            Bundle arguments = new Bundle();
+            if(account != null) {
+                arguments.putParcelable("account", account);
+            }
+            BudgetFragment budgetFragment = new BudgetFragment();
+
+            budgetFragment.setArguments(arguments);
+            getSupportFragmentManager().beginTransaction().replace(R.id.transactions_list, budgetFragment).addToBackStack("main").commit();
+        }
+        else {
+            Toast.makeText(this, "Switch to portrait for account details.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void displayList() {
+        getSupportFragmentManager().popBackStack("main", getSupportFragmentManager().POP_BACK_STACK_INCLUSIVE);
+    }
+
+    @Override
+    public void displayGraphs() {
+        //Bundle arguments = new Bundle();
+        GraphsFragment graphsFragment = new GraphsFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.transactions_list, graphsFragment).addToBackStack("main").commit();
+    }
+
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -134,10 +164,6 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
         // Save UI state changes to the savedInstanceState.
         // This bundle will be passed to onCreate if the process is
         // killed and restarted.
-        savedInstanceState.putBoolean("MyBoolean", true);
-        savedInstanceState.putDouble("myDouble", 1.9);
-        savedInstanceState.putInt("MyInt", 1);
-        savedInstanceState.putString("MyString", "Welcome back to Android");
         // etc.
     }
 
@@ -146,10 +172,6 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
         super.onRestoreInstanceState(savedInstanceState);
         // Restore UI state from the savedInstanceState.
         // This bundle has also been passed to onCreate.
-        boolean myBoolean = savedInstanceState.getBoolean("MyBoolean");
-        double myDouble = savedInstanceState.getDouble("myDouble");
-        int myInt = savedInstanceState.getInt("MyInt");
-        String myString = savedInstanceState.getString("MyString");
     }
 }
 

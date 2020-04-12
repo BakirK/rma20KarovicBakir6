@@ -1,5 +1,6 @@
-package ba.unsa.etf.rma.spirala;
+package ba.unsa.etf.rma.spirala.listeners;
 
+import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 
 public interface OnItemClick {
@@ -7,5 +8,8 @@ public interface OnItemClick {
     void updateTransactionListData();
     void displayAdded();
     void displayDeleted();
+    void displayAccount(Account account);
+    void displayList();
+    void displayGraphs();
 }
 

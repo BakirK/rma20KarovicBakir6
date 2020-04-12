@@ -12,6 +12,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import java.text.SimpleDateFormat;
@@ -19,7 +20,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import ba.unsa.etf.rma.spirala.OnItemClick;
+import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
+import ba.unsa.etf.rma.spirala.budget.OnSwipeTouchListener;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 
@@ -38,6 +40,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     private Date d;
     private OnItemClick onItemClick;
     private Integer previousSelectedItemIndex;
+    private ConstraintLayout layout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,10 +61,6 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         super.onViewStateRestored(savedInstanceState);
         // Restore UI state from the savedInstanceState.
         // This bundle has also been passed to onCreate.
-        boolean myBoolean = savedInstanceState.getBoolean("MyBoolean");
-        double myDouble = savedInstanceState.getDouble("myDouble");
-        int myInt = savedInstanceState.getInt("MyInt");
-        String myString = savedInstanceState.getString("MyString");
     }
 
     private void init(View fragmentView) {
@@ -84,9 +83,16 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
             throw new ClassCastException(getActivity().toString() + "Treba implementirati OnItemClick interfejs");
         }
         previousSelectedItemIndex = -1;
+        layout = (ConstraintLayout) fragmentView.findViewById(R.id.layout);
     }
 
     private void initListeners() {
+        layout.setOnTouchListener(new OnSwipeTouchListener(getActivity()) {
+            @Override
+            public void onSwipeLeft() {
+                onItemClick.displayAccount(getPresenter().getAccount());
+            }
+        });
         prevBtn.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(d);

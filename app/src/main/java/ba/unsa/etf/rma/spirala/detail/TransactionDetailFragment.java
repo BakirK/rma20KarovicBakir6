@@ -3,7 +3,6 @@ package ba.unsa.etf.rma.spirala.detail;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -29,10 +28,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import ba.unsa.etf.rma.spirala.OnItemClick;
+import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
-import ba.unsa.etf.rma.spirala.list.MainActivity;
 import ba.unsa.etf.rma.spirala.list.TransactionSpinnerAdapter;
 
 public class TransactionDetailFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
@@ -421,14 +419,14 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
     private void initFields(View view) {
         amount = (EditText) view.findViewById(R.id.amount);
         title = (EditText) view.findViewById(R.id.title);
-        itemDescription = (EditText) view.findViewById(R.id.itemDescription);
-        transactionInterval = (EditText) view.findViewById(R.id.transactionInterval);
+        itemDescription = (EditText) view.findViewById(R.id.monthlyLimitText);
+        transactionInterval = (EditText) view.findViewById(R.id.globalLimitText);
         dateText = (TextView) view.findViewById(R.id.dateText);
         //dateTextLabel = (TextView) view.findViewById(R.id.dateTextLabel);
         endDateText = (TextView) view.findViewById(R.id.endDateText);
         endDateTextLabel = (TextView) view.findViewById(R.id.endDateTextLabel);
-        transactionIntervalLabel = (TextView) view.findViewById(R.id.transactionIntervalLabel);
-        itemDescriptionLabel = (TextView) view.findViewById(R.id.itemDescriptionLabel);
+        transactionIntervalLabel = (TextView) view.findViewById(R.id.globalLimitLabel);
+        itemDescriptionLabel = (TextView) view.findViewById(R.id.monthlyLimitLabel);
 
         saveBtn = (Button) view.findViewById(R.id.saveBtn);
         deleteBtn = (Button) view.findViewById(R.id.deleteBtn);
