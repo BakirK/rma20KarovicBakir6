@@ -69,7 +69,8 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
 
     @Override
     public void onBackPressed() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        super.onBackPressed();
+        /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Exit app?").setTitle("Confirmation.");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
             }
         });
         AlertDialog alert = builder.create();
-        alert.show();
+        alert.show();*/
     }
 
     @Override
