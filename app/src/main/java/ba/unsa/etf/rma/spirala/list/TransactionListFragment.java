@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
-import ba.unsa.etf.rma.spirala.budget.OnSwipeTouchListener;
+import ba.unsa.etf.rma.spirala.listeners.OnSwipeTouchListener;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 
@@ -90,7 +90,12 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         layout.setOnTouchListener(new OnSwipeTouchListener(getActivity()) {
             @Override
             public void onSwipeLeft() {
-                onItemClick.displayAccount(getPresenter().getAccount());
+                onItemClick.displayAccount();
+            }
+
+            @Override
+            public void onSwipeRight() {
+                onItemClick.displayGraphs();
             }
         });
         prevBtn.setOnClickListener(v -> {

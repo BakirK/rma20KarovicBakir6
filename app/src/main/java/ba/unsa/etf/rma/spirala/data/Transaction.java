@@ -49,12 +49,23 @@ public class Transaction implements Parcelable {
     };
 
     public static boolean sameMonth(Date dateNow, Date transactionDate) {
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(dateNow);
+        Calendar calendar = toCalendar(dateNow.getTime());
         int yearNow = calendar.get(Calendar.YEAR), monthNow = calendar.get(Calendar.MONTH) + 1;
         calendar.setTime(transactionDate);
         int transactionYear = calendar.get(Calendar.YEAR), transactionMonth = calendar.get(Calendar.MONTH) + 1;
         return yearNow == transactionYear && monthNow == transactionMonth;
+    }
+
+    public static boolean sameDay(Date dateNow, Date transactionDate) {
+        Calendar now = toCalendar(dateNow.getTime());
+        Calendar tDate = toCalendar(transactionDate.getTime());
+        int yearNow = now.get(Calendar.YEAR),
+                monthNow = now.get(Calendar.MONTH) + 1,
+                dayNow = now.get(Calendar.DAY_OF_MONTH);
+        int yearTransaction = tDate.get(Calendar.YEAR),
+                monthTransaction = tDate.get(Calendar.MONTH) + 1,
+                dayTransaction = tDate.get(Calendar.DAY_OF_MONTH);
+        return yearNow == yearTransaction && monthNow == monthTransaction && dayNow == dayTransaction;
     }
 
     public static boolean dateOverlapping(Date d, Transaction transaction) {
@@ -223,7 +234,7 @@ public class Transaction implements Parcelable {
         return (int)(diff / (24 * 60 * 60 * 1000));
     }
 
-    private static Calendar toCalendar(long timestamp)
+    public static Calendar toCalendar(long timestamp)
     {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timestamp);
@@ -248,6 +259,12 @@ public class Transaction implements Parcelable {
             c++;
         }
         return c - 1;
+    }
+
+    public static boolean sameWeek(Date a, Date b) {
+        Calendar first = toCalendar(a.getTime());
+        Calendar second = toCalendar(b.getTime());
+        return first.get(Calendar.YEAR) == second.get(Calendar.YEAR) && first.get(Calendar.WEEK_OF_YEAR) == second.get(Calendar.WEEK_OF_YEAR);
     }
 
 }

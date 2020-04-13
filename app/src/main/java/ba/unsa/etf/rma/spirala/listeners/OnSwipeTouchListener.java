@@ -1,4 +1,4 @@
-package ba.unsa.etf.rma.spirala.budget;
+package ba.unsa.etf.rma.spirala.listeners;
 
 import android.content.Context;
 import android.view.GestureDetector;

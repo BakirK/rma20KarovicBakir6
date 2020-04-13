@@ -130,15 +130,9 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
     }
 
     @Override
-    public void displayAccount(Account account) {
+    public void displayAccount() {
         if (!twoPaneMode){
-            Bundle arguments = new Bundle();
-            if(account != null) {
-                arguments.putParcelable("account", account);
-            }
             BudgetFragment budgetFragment = new BudgetFragment();
-
-            budgetFragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction().replace(R.id.transactions_list, budgetFragment).addToBackStack("main").commit();
         }
         else {

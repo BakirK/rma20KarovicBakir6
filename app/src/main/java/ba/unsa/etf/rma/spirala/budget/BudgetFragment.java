@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
+import ba.unsa.etf.rma.spirala.listeners.OnSwipeTouchListener;
 
 public class BudgetFragment extends Fragment {
     private TextView amountText;
@@ -29,10 +30,7 @@ public class BudgetFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View fragmentView = inflater.inflate(R.layout.budget_fragment, container, false);
         init(fragmentView);
-        if (getArguments() != null && getArguments().containsKey("account")) {
-            presenter = new BudgetPresenter(getActivity().getApplicationContext(), getArguments().getParcelable("account"));
-            refreshFields();
-        }
+        refreshFields();
         initListeners();
         return fragmentView;
     }

@@ -8,7 +8,7 @@ public interface OnItemClick {
     void updateTransactionListData();
     void displayAdded();
     void displayDeleted();
-    void displayAccount(Account account);
+    void displayAccount();
     void displayList();
     void displayGraphs();
 }
