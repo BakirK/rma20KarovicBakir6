@@ -17,4 +17,12 @@ public interface IBudgetPresenter {
     List<Entry> getDailyExpensesEntries();
     List<Entry> getMonthlyExpensesEntries();
     List<Entry> getWeeklyExpensesEntries();
+
+    List<Entry> getDailyIncomeEntries();
+    List<Entry> getMonthlyIncomeEntries();
+    List<Entry> getWeeklyIncomeEntries();
+
+    List<Entry> getDailyBudgetEntries();
+    List<Entry> getMonthlyBudgetEntries();
+    List<Entry> getWeeklyBudgetEntries();
 }

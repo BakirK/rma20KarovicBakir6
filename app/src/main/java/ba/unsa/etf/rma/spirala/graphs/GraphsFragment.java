@@ -1,7 +1,6 @@
 package ba.unsa.etf.rma.spirala.graphs;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +25,7 @@ import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 public class GraphsFragment extends Fragment {
     private ConstraintLayout layout;
     private OnItemClick onItemClick;
-    private LineChart lineChart;
+    private LineChart expensesChart, incomeChart, budgetChart;
     private BudgetPresenter presenter;
     private RadioGroup radioGroup;
 
@@ -45,24 +44,27 @@ public class GraphsFragment extends Fragment {
         return presenter;
     }
 
-    private void showExpenses(List<Entry> entries, String label) {
-        Log.d("NUMBER", Integer.toString(entries.size()));
+    private void showChart(List<Entry> entries, String label, LineChart chart) {
         LineDataSet dataSet = new LineDataSet(entries, label);
         dataSet.setColor(R.color.lightGrrey);
         dataSet.setValueTextColor(R.color.red);
         LineData lineData = new LineData(dataSet);
-        lineChart.setNoDataText("No transactions today of this type.");
+        chart.setNoDataText("No transactions today of this type.");
         Description d = new Description();
         d.setText("");
-        lineChart.setDescription(d);
-        lineChart.setData(lineData);
-        lineChart.notifyDataSetChanged();
-        lineChart.invalidate(); // refresh
+        chart.setDescription(d);
+        chart.setData(lineData);
+        chart.notifyDataSetChanged();
+        chart.invalidate(); // refresh
     }
 
     private void init(View view) {
-        lineChart = (LineChart) view.findViewById(R.id.chart);
-        showExpenses(getPresenter().getDailyExpensesEntries(), "Hourly expenses");
+        expensesChart = (LineChart) view.findViewById(R.id.expensesChart);
+        showChart(getPresenter().getDailyExpensesEntries(), "Daily expenses", expensesChart);
+        incomeChart = (LineChart) view.findViewById(R.id.incomeChart);
+        showChart(getPresenter().getDailyIncomeEntries(), "Daily income", incomeChart);
+        budgetChart = (LineChart) view.findViewById(R.id.budgetChart);;
+        showChart(getPresenter().getDailyBudgetEntries(), "Daily budget", budgetChart);
 
         layout = view.findViewById(R.id.layout);
         try {
@@ -90,15 +92,21 @@ public class GraphsFragment extends Fragment {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId) {
                     case R.id.radioDay: {
-                        showExpenses(getPresenter().getDailyExpensesEntries(), "Daily expenses");
+                        showChart(getPresenter().getDailyExpensesEntries(), "Daily expenses", expensesChart);
+                        showChart(getPresenter().getDailyIncomeEntries(), "Daily income", incomeChart);
+                        showChart(getPresenter().getDailyBudgetEntries(), "Daily budget", budgetChart);
                         break;
                     }
                     case R.id.radioMonth: {
-                        showExpenses(getPresenter().getMonthlyExpensesEntries(), "Monthly expenses");
+                        showChart(getPresenter().getMonthlyExpensesEntries(), "Monthly expenses", expensesChart);
+                        showChart(getPresenter().getMonthlyIncomeEntries(), "Monthly income", incomeChart);
+                        showChart(getPresenter().getMonthlyBudgetEntries(), "Monthly budget", budgetChart);
                         break;
                     }
                     case R.id.radioWeek: {
-                        showExpenses(getPresenter().getWeeklyExpensesEntries(), "Weekly expenses");
+                        showChart(getPresenter().getWeeklyExpensesEntries(), "Weekly expenses", expensesChart);
+                        showChart(getPresenter().getWeeklyIncomeEntries(), "Weekly income", incomeChart);
+                        showChart(getPresenter().getWeeklyBudgetEntries(), "Weekly budget", budgetChart);
                         break;
                     }
                 }
