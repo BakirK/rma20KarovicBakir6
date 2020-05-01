@@ -121,7 +121,7 @@ public class Transaction implements Parcelable {
     private Double amount;
     private String title;
     private String itemDescription; //null for INCOME transaction
-    private Integer transactionInterval; //only for REGULARINCOME and REGULARPAYMENT
+    private Integer transactionInterval; //only for regularincome and regularpayment
     private Date endDate; //for regular transactions
     private Type type;
 
