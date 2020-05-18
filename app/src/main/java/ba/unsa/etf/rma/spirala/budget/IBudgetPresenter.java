@@ -7,13 +7,13 @@ import java.util.List;
 import ba.unsa.etf.rma.spirala.data.Account;
 
 public interface IBudgetPresenter {
-    void setTotalLimit(double d);
-    void setMonthLimit(double d);
+    void updateLimits(double totalLimit, double monthlyLimit);
+    void setBudget(double budget);
+    void setTotalLimit(double totalLimit);
+    void setMonthLimit(double monthLimit);
     double getBudget();
     double getTotalLimit();
-    double getMonthyLimit();
-    void setAccount(Account account);
-    void updateAccount(double totalLimit, double monthlyLimit);
+    double getMonthlyLimit();
     List<Entry> getDailyExpensesEntries();
     List<Entry> getMonthlyExpensesEntries();
     List<Entry> getWeeklyExpensesEntries();

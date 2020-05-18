@@ -13,35 +13,61 @@ import java.util.Vector;
 
 import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
+import ba.unsa.etf.rma.spirala.data.AccountPostInteractor;
 import ba.unsa.etf.rma.spirala.data.IAccountInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.list.ITransactionListInteractor;
 import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
 
-public class BudgetPresenter implements IBudgetPresenter {
-    private IAccountInteractor accountInteractor;
+public class BudgetPresenter implements IBudgetPresenter, AccountInteractor.OnAccountSearchDone {
     private ITransactionListInteractor transactionListInteractor;
     private Context context;
     private Account account;
 
     public BudgetPresenter(Context context) {
-        this.accountInteractor = new AccountInteractor();
         this.transactionListInteractor = new TransactionListInteractor();
         this.context = context;
-        this.account = accountInteractor.getAccount();
-    }
-
-
-    @Override
-    public void setTotalLimit(double d) {
-        accountInteractor.setTotalLimit(d);
-        this.account = accountInteractor.getAccount();
+        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this).execute();
     }
 
     @Override
-    public void setMonthLimit(double d) {
-        accountInteractor.setMonthLimit(d);
-        this.account = accountInteractor.getAccount();
+    public void updateLimits(double totalLimit, double monthlyLimit) {
+        new AccountPostInteractor((AccountInteractor.OnAccountSearchDone)this).execute(
+                Double.toString(account.getBudget()),
+                Double.toString(totalLimit),
+                Double.toString(monthlyLimit)
+        );
+    }
+
+    @Override
+    public void setBudget(double budget) {
+        new AccountPostInteractor((AccountInteractor.OnAccountSearchDone)this).execute(
+                Double.toString(budget),
+                Double.toString(account.getTotalLimit()),
+                Double.toString(account.getMonthLimit())
+        );
+    }
+
+    @Override
+    public void setTotalLimit(double totalLimit) {
+        new AccountPostInteractor((AccountInteractor.OnAccountSearchDone)this).execute(
+                Double.toString(account.getBudget()),
+                Double.toString(totalLimit),
+                Double.toString(account.getMonthLimit())
+        );
+        /*accountInteractor.setTotalLimit(d);
+        this.account = accountInteractor.getAccount();*/
+    }
+
+    @Override
+    public void setMonthLimit(double monthLimit) {
+        new AccountPostInteractor((AccountInteractor.OnAccountSearchDone)this).execute(
+                Double.toString(account.getBudget()),
+                Double.toString(account.getTotalLimit()),
+                Double.toString(monthLimit)
+        );
+        /*accountInteractor.setMonthLimit(d);
+        this.account = accountInteractor.getAccount();*/
     }
 
     @Override
@@ -55,20 +81,8 @@ public class BudgetPresenter implements IBudgetPresenter {
     }
 
     @Override
-    public double getMonthyLimit() {
+    public double getMonthlyLimit() {
         return account.getMonthLimit();
-    }
-
-    @Override
-    public void setAccount(Account account) {
-        this.account = account;
-    }
-
-    @Override
-    public void updateAccount(double totalLimit, double monthlyLimit) {
-        accountInteractor.setTotalLimit(totalLimit);
-        accountInteractor.setMonthLimit(monthlyLimit);
-        this.account = accountInteractor.getAccount();
     }
 
     @Override
@@ -714,5 +728,10 @@ public class BudgetPresenter implements IBudgetPresenter {
             i++;
         }
         return sumEntries;
+    }
+
+    @Override
+    public void onDone(Account result) {
+        this.account = result;
     }
 }

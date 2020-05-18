@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.spirala.list;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,22 +12,25 @@ import ba.unsa.etf.rma.spirala.data.AccountInteractor;
 import ba.unsa.etf.rma.spirala.data.IAccountInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 
-public class TransactionListPresenter implements ITransactionListPresenter {
+public class TransactionListPresenter implements ITransactionListPresenter, AccountInteractor.OnAccountSearchDone {
     private ITransactionListInteractor transactionInteractor;
-    private IAccountInteractor accountInteractor;
     private ITransactionListView view;
     private Context context;
+    private Account account;
 
     public TransactionListPresenter(ITransactionListView view, Context context) {
+        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this).execute();
         this.transactionInteractor = new TransactionListInteractor();
-        accountInteractor = new AccountInteractor();
         this.view = view;
         this.context = context;
     }
 
     @Override
     public Account getAccount() {
-        return accountInteractor.getAccount();
+        if(account == null) {
+            Log.e("account is null trLiPr", "null");
+        }
+        return account;
     }
 
 
@@ -84,16 +88,30 @@ public class TransactionListPresenter implements ITransactionListPresenter {
 
     @Override
     public double getBudget() {
-        return accountInteractor.getBudget() - transactionInteractor.getTotalAmount();
+        if(account == null) {
+            Log.e("acc null trLiPr gbu", "null");
+        }
+        return account.getBudget() - transactionInteractor.getTotalAmount();
     }
 
     @Override
     public double getTotalLimit() {
-        return accountInteractor.getTotalLimit();
+        if(account == null) {
+            Log.e("acc null trLiPr gtl", "null");
+        }
+        return account.getTotalLimit();
     }
 
     @Override
     public double getMonthLimit() {
-        return accountInteractor.getMonthLimit();
+        if(account == null) {
+            Log.e("acc null trLiPr gml", "null");
+        }
+        return account.getMonthLimit();
+    }
+
+    @Override
+    public void onDone(Account result) {
+        this.account = result;
     }
 }

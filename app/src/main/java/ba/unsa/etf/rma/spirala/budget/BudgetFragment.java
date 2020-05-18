@@ -37,7 +37,7 @@ public class BudgetFragment extends Fragment {
 
     private void refreshFields() {
         amountText.setText(Double.toString(getPresenter().getBudget()));
-        monthlyLimitText.setText(Double.toString(getPresenter().getMonthyLimit()));
+        monthlyLimitText.setText(Double.toString(getPresenter().getMonthlyLimit()));
         globalLimitText.setText(Double.toString(getPresenter().getTotalLimit()));
     }
 
@@ -87,7 +87,7 @@ public class BudgetFragment extends Fragment {
                     showToast("Global limit can't be negative!");
                     return;
                 }
-                getPresenter().updateAccount(globalLimit, monthlyLimit);
+                getPresenter().updateLimits(globalLimit, monthlyLimit);
                 refreshFields();
                 showToast("Changes saved.");
             }

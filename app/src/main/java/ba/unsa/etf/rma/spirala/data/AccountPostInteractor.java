@@ -2,66 +2,28 @@ package ba.unsa.etf.rma.spirala.data;
 
 import android.os.AsyncTask;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.util.Util;
 
-public class AccountInteractor extends AsyncTask<String, Integer, Void> implements IAccountInteractor {
+public class AccountPostInteractor extends AsyncTask<String, Integer, Void> {
     private String api_id = String.valueOf(R.string.api_id);
-    private OnAccountSearchDone caller;
+    private AccountInteractor.OnAccountSearchDone caller;
     private Account account;
 
-    public AccountInteractor(OnAccountSearchDone p) {
+    public AccountPostInteractor(AccountInteractor.OnAccountSearchDone p) {
         caller = p;
     }
-
-
-    /*@Override
-    public Account getAccount() {
-        return AccountModel.account;
-    }
-
-    @Override
-    public void setBudget(double d) {
-        AccountModel.account.setBudget(d);
-    }
-
-    @Override
-    public void setTotalLimit(double d) {
-        AccountModel.account.setTotalLimit(d);
-    }
-
-    @Override
-    public void setMonthLimit(double d) {
-        AccountModel.account.setMonthLimit(d);
-    }
-
-    @Override
-    public double getBudget() {
-        return AccountModel.account.getBudget();
-    }
-
-    @Override
-    public double getTotalLimit() {
-        return AccountModel.account.getTotalLimit();
-    }
-
-    @Override
-    public double getMonthLimit() {
-        return AccountModel.account.getMonthLimit();
-    }*/
 
     @Override
     protected Void doInBackground(String... strings) {
@@ -69,6 +31,16 @@ public class AccountInteractor extends AsyncTask<String, Integer, Void> implemen
         try {
             URL url = new URL(url1);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json; utf-8");
+            urlConnection.setRequestProperty("Accept", "application/json");
+            urlConnection.setDoOutput(true);
+            String jsonInputString =
+                    "{budget: "+ strings[0] + ", totalLimit: " + strings[1] + ", monthLimit: " + strings[2] +"}";
+            try(OutputStream os = urlConnection.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
             String result = Util.convertStreamToString(in);
             JSONObject jo = new JSONObject(result);
@@ -92,9 +64,5 @@ public class AccountInteractor extends AsyncTask<String, Integer, Void> implemen
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         caller.onDone(account);
-    }
-
-    public interface OnAccountSearchDone{
-        public void onDone(Account result);
     }
 }

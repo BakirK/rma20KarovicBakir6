@@ -8,21 +8,22 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Date;
 
+import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
 import ba.unsa.etf.rma.spirala.data.IAccountInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.list.ITransactionListInteractor;
 import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
 
-public class TransactionDetailPresenter implements ITransactionDetailPresenter {
+public class TransactionDetailPresenter implements ITransactionDetailPresenter, AccountInteractor.OnAccountSearchDone {
     private ITransactionListInteractor transactionInteractor;
-    private IAccountInteractor accountInteractor;
     private Context context;
     private Transaction transaction;
+    private Account account;
 
     public TransactionDetailPresenter(Context context) {
+        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this).execute();
         transactionInteractor = new TransactionListInteractor();
-        accountInteractor = new AccountInteractor();
         this.context = context;
     }
 
@@ -95,8 +96,8 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
         Log.d("interactor month", transactionInteractor.getMonthlyAmount(date).toString() );
         Double monthExpenses = transactionInteractor.getMonthlyAmount(date) - thisAmount + amount;
         Log.d("month total", Double.toString(monthExpenses));
-        Log.d("month limit", Double.toString(accountInteractor.getMonthLimit()));
-        return accountInteractor.getMonthLimit() < monthExpenses;
+        Log.d("month limit", Double.toString(account.getMonthLimit()));
+        return account.getMonthLimit() < monthExpenses;
     }
 
 
@@ -122,8 +123,8 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
         }
         Double totalExpenses = transactionInteractor.getTotalAmount() - thisAmount + amount;
         Log.d("global total", Double.toString(totalExpenses));
-        Log.d("global limit", Double.toString(accountInteractor.getTotalLimit()));
-        return totalExpenses > accountInteractor.getTotalLimit();
+        Log.d("global limit", Double.toString(account.getTotalLimit()));
+        return totalExpenses > account.getTotalLimit();
     }
 
     @Override
@@ -152,5 +153,10 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
             updateTransaction();
         }
 
+    }
+
+    @Override
+    public void onDone(Account result) {
+        this.account = result;
     }
 }
