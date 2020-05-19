@@ -7,6 +7,7 @@ import java.util.List;
 import ba.unsa.etf.rma.spirala.data.Account;
 
 public interface IBudgetPresenter {
+    void refreshAccount();
     void updateLimits(double totalLimit, double monthlyLimit);
     void setBudget(double budget);
     void setTotalLimit(double totalLimit);
@@ -14,15 +15,4 @@ public interface IBudgetPresenter {
     double getBudget();
     double getTotalLimit();
     double getMonthlyLimit();
-    List<Entry> getDailyExpensesEntries();
-    List<Entry> getMonthlyExpensesEntries();
-    List<Entry> getWeeklyExpensesEntries();
-
-    List<Entry> getDailyIncomeEntries();
-    List<Entry> getMonthlyIncomeEntries();
-    List<Entry> getWeeklyIncomeEntries();
-
-    List<Entry> getDailyBudgetEntries();
-    List<Entry> getMonthlyBudgetEntries();
-    List<Entry> getWeeklyBudgetEntries();
 }

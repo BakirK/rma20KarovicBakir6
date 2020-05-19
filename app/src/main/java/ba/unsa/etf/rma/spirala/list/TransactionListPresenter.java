@@ -6,6 +6,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
 import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
@@ -19,10 +20,11 @@ public class TransactionListPresenter implements ITransactionListPresenter, Acco
     private Account account;
 
     public TransactionListPresenter(ITransactionListView view, Context context) {
-        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this).execute();
         this.transactionInteractor = new TransactionListInteractor();
         this.view = view;
         this.context = context;
+        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this, context).execute();
+
     }
 
     @Override
@@ -113,5 +115,6 @@ public class TransactionListPresenter implements ITransactionListPresenter, Acco
     @Override
     public void onDone(Account result) {
         this.account = result;
+        view.setTextViewText(result);
     }
 }

@@ -22,11 +22,11 @@ import ba.unsa.etf.rma.spirala.budget.BudgetPresenter;
 import ba.unsa.etf.rma.spirala.listeners.OnSwipeTouchListener;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 
-public class GraphsFragment extends Fragment {
+public class GraphsFragment extends Fragment implements IGraphView {
     private ConstraintLayout layout;
     private OnItemClick onItemClick;
     private LineChart expensesChart, incomeChart, budgetChart;
-    private BudgetPresenter presenter;
+    private GraphPresenter presenter;
     private RadioGroup radioGroup;
 
     @Override
@@ -37,9 +37,9 @@ public class GraphsFragment extends Fragment {
         return view;
     }
 
-    private BudgetPresenter getPresenter() {
+    private GraphPresenter getPresenter() {
         if(presenter == null) {
-            presenter = new BudgetPresenter(getActivity().getApplicationContext());
+            presenter = new GraphPresenter(this, getActivity().getApplicationContext());
         }
         return presenter;
     }

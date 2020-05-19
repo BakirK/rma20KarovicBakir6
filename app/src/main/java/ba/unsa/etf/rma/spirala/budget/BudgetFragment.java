@@ -14,10 +14,11 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import ba.unsa.etf.rma.spirala.R;
+import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.listeners.OnSwipeTouchListener;
 
-public class BudgetFragment extends Fragment {
+public class BudgetFragment extends Fragment implements IBudgetView {
     private TextView amountText;
     private Button saveBtn;
     private EditText monthlyLimitText;
@@ -30,15 +31,15 @@ public class BudgetFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View fragmentView = inflater.inflate(R.layout.budget_fragment, container, false);
         init(fragmentView);
-        refreshFields();
         initListeners();
+        getPresenter();
         return fragmentView;
     }
-
-    private void refreshFields() {
-        amountText.setText(Double.toString(getPresenter().getBudget()));
-        monthlyLimitText.setText(Double.toString(getPresenter().getMonthlyLimit()));
-        globalLimitText.setText(Double.toString(getPresenter().getTotalLimit()));
+    @Override
+    public void refreshFields(Account account) {
+        amountText.setText(Double.toString(account.getBudget()));
+        monthlyLimitText.setText(Double.toString(account.getMonthLimit()));
+        globalLimitText.setText(Double.toString(account.getTotalLimit()));
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -67,11 +68,11 @@ public class BudgetFragment extends Fragment {
                     return;
                 }
                 //characters check
-                if(!monthlyLimitText.getText().toString().trim().matches("[0-9]+")) {
+                if(!monthlyLimitText.getText().toString().trim().matches("^\\d*\\.?\\d*$")) {
                     showToast("Monthly limit must contain numbers only!");
                     return;
                 }
-                if(!globalLimitText.getText().toString().trim().matches("[0-9]+")) {
+                if(!globalLimitText.getText().toString().trim().matches("^\\d*\\.?\\d*$")) {
                     showToast("Monthly limit must contain numbers only!");
                     return;
                 }
@@ -88,8 +89,6 @@ public class BudgetFragment extends Fragment {
                     return;
                 }
                 getPresenter().updateLimits(globalLimit, monthlyLimit);
-                refreshFields();
-                showToast("Changes saved.");
             }
         });
     }
@@ -110,11 +109,12 @@ public class BudgetFragment extends Fragment {
 
     private BudgetPresenter getPresenter() {
         if(presenter == null) {
-            presenter = new BudgetPresenter(getActivity().getApplicationContext());
+            presenter = new BudgetPresenter(this, getActivity().getApplicationContext());
         }
         return presenter;
     }
-    private void showToast(String text) {
+    @Override
+    public void showToast(String text) {
         Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
     }
 }

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.listeners.OnSwipeTouchListener;
 import ba.unsa.etf.rma.spirala.R;
@@ -72,9 +73,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         sortBySpinner = fragmentView.findViewById(R.id.sortBySpinner);
         nextBtn = (ImageButton) fragmentView.findViewById(R.id.nextBtn);
         prevBtn = (ImageButton) fragmentView.findViewById(R.id.prevBtn);
-        textViewAmount.setText(String.format("%.2f", getPresenter().getBudget()));
-        textViewLimit.setText(String.format("%.2f", getPresenter().getTotalLimit()));
-        monthlyLimit.setText(String.format("%.2f", getPresenter().getMonthLimit()));
+
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         dateText.setText(format.format(d));
         try {
@@ -175,7 +174,6 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         sortBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //getPresenter().sak();
                 getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), parent.getItemAtPosition(position).toString(), d);
             }
             @Override
@@ -193,6 +191,13 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     @Override
     public void notifyTransactionListDataSetChanged() {
         adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void setTextViewText(Account account) {
+        textViewAmount.setText(String.format("%.2f", account.getBudget()));
+        textViewLimit.setText(String.format("%.2f", account.getTotalLimit()));
+        monthlyLimit.setText(String.format("%.2f", account.getMonthLimit()));
     }
 
 

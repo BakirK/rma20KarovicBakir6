@@ -22,7 +22,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter, 
     private Account account;
 
     public TransactionDetailPresenter(Context context) {
-        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this).execute();
+        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this, context).execute();
         transactionInteractor = new TransactionListInteractor();
         this.context = context;
     }
