@@ -1,23 +1,109 @@
 package ba.unsa.etf.rma.spirala.list;
 
+import android.content.Context;
+import android.os.AsyncTask;
+
 import androidx.annotation.Nullable;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.data.TransactionModel;
+import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.Util;
 
-public class TransactionListInteractor implements ITransactionListInteractor {
+public class TransactionListInteractor extends AsyncTask<String, Integer, Void> implements ITransactionListInteractor {
+    private Context context;
+    private Lambda lambda;
+    ArrayList<Transaction> transactions;
+
+    TransactionListInteractor(Lambda lambda, Context context) {
+        this.lambda = lambda;
+        this.context = context;
+    }
+
     @Override
-    public ArrayList<Transaction> get() {
+    protected Void doInBackground(String... strings) {
+        getAllPages();
+        return null;
+    }
+
+    private void getAllPages() {
+        int page = 0;
+        outer: while(true) {
+            String url1 = context.getString(R.string.root) + "/account/" +  context.getString(R.string.api_id)
+                    + "/transacions?page=" + page;
+            try {
+                URL url = new URL(url1);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                String result = Util.convertStreamToString(in);
+                JSONObject jo = new JSONObject(result);
+                JSONArray results = jo.getJSONArray("transactions");
+                if(result.length() == 0) {
+                    break outer;
+                } else page++;
+                for (int i = 0; i < result.length(); i++) {
+                    transactions.add(extractTransaction(results.getJSONObject(i)));
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static Transaction extractTransaction(JSONObject transaction) throws JSONException {
+        int id = transaction.getInt("id");
+        Date date = null;
+        Date endDate = null;
+        try {
+            String dateStr = transaction.getString("date");
+            String endDateStr = transaction.getString("endDate");
+            if(endDateStr != null) {
+                endDate = Transaction.format.parse(endDateStr.substring(0, 10));
+            }
+            if(dateStr != null) {
+                date = Transaction.format.parse(dateStr.substring(0, 10));
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Double amount = transaction.getDouble("amount");
+        String title = transaction.getString("title");
+        Transaction.Type type = Transaction.getTypeById(transaction.getInt("TransactionTypeId"));
+        String itemDescription = transaction.getString("itemDescription");
+        Integer transactionInterval = transaction.getInt("transactionInterval");
+        return new Transaction(id, date, amount, title, type, itemDescription, transactionInterval, endDate);
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        (this.lambda).pass(transactions);
+    }
+
+    @Override
+    public ArrayList<Transaction> getTransactions() {
         return TransactionModel.transactions;
     }
 
-    @Override
-    public void addTransaction(Transaction t) {
-        TransactionModel.transactions.add(t);
-    }
 
     @Override
     public void remove(int i) {
@@ -37,72 +123,10 @@ public class TransactionListInteractor implements ITransactionListInteractor {
                                          @Nullable String itemDescription,
                                          @Nullable Integer transactionInterval,
                                          @Nullable Date endDate) {
-        Transaction transaction = new Transaction(date, amount, title, type, itemDescription, transactionInterval, endDate);
+        Transaction transaction = new Transaction(0, date, amount, title, type, itemDescription, transactionInterval, endDate);
         TransactionModel.transactions.add(transaction);
         return  transaction;
     }
 
-    @Override
-    public Double getTotalAmount() {
-        Double sum = 0.;
-        for (Transaction transaction: TransactionModel.transactions) {
-            if(Transaction.isIncome(transaction.getType())) {
-                continue;
-            }
-            if(Transaction.isIndividual(transaction.getType())) {
-                /*if(Transaction.isIncome(transaction.getType())) {
-                    sum -= transaction.getAmount();
-                } else {*/
-                    sum += transaction.getAmount();
-                //}
-            } else {
-                Double thisAmount = transaction.getAmount();
-                int monthsBetween = Transaction.monthsBetween(transaction.getDate(), transaction.getEndDate());
-                int daysBetween = Transaction.getDaysBetween(transaction.getDate(), transaction.getEndDate());
-                int averageNumberOfDaysPerMonth = daysBetween/(monthsBetween+1);
-                thisAmount = thisAmount * averageNumberOfDaysPerMonth / transaction.getTransactionInterval();
-                /*if(Transaction.isIncome(transaction.getType())) {
-                    sum -= thisAmount;
-                } else {*/
-                    sum += thisAmount;
-                //}
-            }
-        }
-        return sum;
-    }
 
-    @Override
-    public Double getMonthlyAmount(Date date) {
-        Double sum = 0.;
-        if(date != null){
-            for (Transaction transaction: TransactionModel.transactions) {
-                if(Transaction.isIncome(transaction.getType())) {
-                    continue;
-                }
-                if(Transaction.isIndividual(transaction.getType())) {
-                    if(Transaction.sameMonth(date, transaction.getDate())) {
-                        /*if(Transaction.isIncome(transaction.getType())) {
-                            sum -= transaction.getAmount();
-                        } else {*/
-                            sum += transaction.getAmount();
-                        //}
-                    }
-                } else {
-                    if(Transaction.dateOverlapping(date, transaction)) {
-                        Double thisAmount = transaction.getAmount();
-                        int monthsBetween = Transaction.monthsBetween(transaction.getDate(), transaction.getEndDate());
-                        int daysBetween = Transaction.getDaysBetween(transaction.getDate(), transaction.getEndDate());
-                        int averageNumberOfDaysPerMonth = daysBetween/(monthsBetween+1);
-                        thisAmount = thisAmount * averageNumberOfDaysPerMonth / transaction.getTransactionInterval();
-                        /*if(Transaction.isIncome(transaction.getType())) {
-                            sum -= thisAmount;
-                        } else {*/
-                            sum += thisAmount;
-                        //}
-                    }
-                }
-            }
-        }
-        return sum;
-    }
 }

@@ -18,6 +18,7 @@ import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
 
 import ba.unsa.etf.rma.spirala.R;
+import ba.unsa.etf.rma.spirala.util.Requests;
 
 public class AccountPostInteractor extends AsyncTask<String, Integer, Void> {
     private String api_id;
@@ -35,39 +36,19 @@ public class AccountPostInteractor extends AsyncTask<String, Integer, Void> {
     protected Void doInBackground(String... strings) {
         String url1 = context.getString(R.string.root) + "/account/" + api_id;
         try {
-            URL url = new URL(url1);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
-            urlConnection.setRequestProperty("Accept", "application/json");
-            urlConnection.setDoOutput(true);
-            urlConnection.setDoInput(true);
             JSONObject jsonParam = new JSONObject();
             jsonParam.put("budget", strings[0]);
             jsonParam.put("totalLimit", strings[1]);
             jsonParam.put("monthLimit", strings[2]);
-            Log.i("JSON", jsonParam.toString());
-            DataOutputStream os = new DataOutputStream(urlConnection.getOutputStream());
-            os.writeBytes(jsonParam.toString());
-            os.flush();
-            os.close();
 
-            int responseCode= urlConnection.getResponseCode();
-            if (responseCode == HttpsURLConnection.HTTP_OK) {
-                String line;
-                BufferedReader br=new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String response = "";
-                while ((line=br.readLine()) != null) {
-                    response+=line;
-                }
-                JSONObject jo = new JSONObject(response);
-                Integer id = jo.getInt("id");
-                Double budget = jo.getDouble("budget");
-                Double totalLimit = jo.getDouble("totalLimit");
-                Double monthLimit = jo.getDouble("monthLimit");
-                String email = jo.getString("email");
-                account = new Account(id, budget, totalLimit, monthLimit, email);
-            }
+            String response = Requests.post(url1, jsonParam);
+            JSONObject jo = new JSONObject(response);
+            Integer id = jo.getInt("id");
+            Double budget = jo.getDouble("budget");
+            Double totalLimit = jo.getDouble("totalLimit");
+            Double monthLimit = jo.getDouble("monthLimit");
+            String email = jo.getString("email");
+            account = new Account(id, budget, totalLimit, monthLimit, email);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {

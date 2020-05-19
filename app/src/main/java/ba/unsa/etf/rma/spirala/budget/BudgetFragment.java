@@ -115,7 +115,9 @@ public class BudgetFragment extends Fragment implements IBudgetView {
     }
     @Override
     public void showToast(String text) {
-        Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+        if(getActivity() != null) {
+            Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+        }
     }
 }
 

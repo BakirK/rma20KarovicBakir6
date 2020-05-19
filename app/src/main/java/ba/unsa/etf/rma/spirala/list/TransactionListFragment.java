@@ -57,12 +57,6 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         return fragmentView;
     }
 
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        // Restore UI state from the savedInstanceState.
-        // This bundle has also been passed to onCreate.
-    }
 
     private void init(View fragmentView) {
         textViewAmount = (TextView) fragmentView.findViewById(R.id.textViewAmount);
@@ -73,7 +67,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         sortBySpinner = fragmentView.findViewById(R.id.sortBySpinner);
         nextBtn = (ImageButton) fragmentView.findViewById(R.id.nextBtn);
         prevBtn = (ImageButton) fragmentView.findViewById(R.id.prevBtn);
-
+        getPresenter().refreshAccount();
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         dateText.setText(format.format(d));
         try {

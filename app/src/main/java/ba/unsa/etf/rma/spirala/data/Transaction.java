@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import androidx.annotation.Nullable;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -124,11 +125,12 @@ public class Transaction implements Parcelable {
     private Integer transactionInterval; //only for regularincome and regularpayment
     private Date endDate; //for regular transactions
     private Type type;
+    public static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
-    public Transaction(Date date, Double amount, String title, Type type, @Nullable String itemDescription,
+
+    public Transaction(int id, Date date, Double amount, String title, Type type, @Nullable String itemDescription,
                        @Nullable Integer transactionInterval, @Nullable Date endDate) {
-        this.id = sequence;
-        sequence += 1;
+        this.id = id;
         this.date = date;
         this.amount = amount;
         this.title = title;
@@ -148,6 +150,38 @@ public class Transaction implements Parcelable {
             this.transactionInterval = null;
             this.endDate = null;
         }
+    }
+
+    public static int getTypeId(Type t) {
+        switch(t) {
+            case REGULARPAYMENT: {
+                return 1;
+            }
+            case REGULARINCOME: {
+                return 2;
+            }
+            case PURCHASE: {
+                return 3;
+            }
+            case INDIVIDUALINCOME: {
+                return 4;
+            }
+            case INDIVIDUALPAYMENT: {
+                return 5;
+            }
+        }
+        return 0;
+    }
+
+    public static Type getTypeById(int id) {
+        switch (id) {
+            case 1: return Type.REGULARPAYMENT;
+            case 2: return Type.REGULARINCOME;
+            case 3: return Type.PURCHASE;
+            case 4: return Type.INDIVIDUALINCOME;
+            case 5: return Type.INDIVIDUALPAYMENT;
+        }
+        return Type.ALL;
     }
 
     public int getId() {

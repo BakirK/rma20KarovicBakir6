@@ -1,22 +1,15 @@
 package ba.unsa.etf.rma.spirala.data;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.AsyncTask;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.util.Util;
 

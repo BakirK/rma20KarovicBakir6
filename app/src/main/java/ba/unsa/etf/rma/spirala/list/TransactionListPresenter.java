@@ -12,19 +12,27 @@ import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
 import ba.unsa.etf.rma.spirala.data.IAccountInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
+import ba.unsa.etf.rma.spirala.data.TransactionAmount;
+import ba.unsa.etf.rma.spirala.util.ILambda;
+import ba.unsa.etf.rma.spirala.util.Lambda;
 
 public class TransactionListPresenter implements ITransactionListPresenter, AccountInteractor.OnAccountSearchDone {
-    private ITransactionListInteractor transactionInteractor;
     private ITransactionListView view;
     private Context context;
     private Account account;
+    ArrayList<Transaction> transactions = null;
 
     public TransactionListPresenter(ITransactionListView view, Context context) {
-        this.transactionInteractor = new TransactionListInteractor();
+        new TransactionListInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                transactions = (ArrayList<Transaction>) o;
+                return 0;
+            }
+        }), context).execute();
         this.view = view;
         this.context = context;
-        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this, context).execute();
-
+        refreshAccount();
     }
 
     @Override
@@ -38,7 +46,7 @@ public class TransactionListPresenter implements ITransactionListPresenter, Acco
 
     @Override
     public void refreshTransactions(Transaction.Type t, String orderBy, Date d) {
-        ArrayList<Transaction> transactions = transactionInteractor.get();
+        //ArrayList<Transaction> transactions = transactionInteractor.get();
         if(t != null && t != Transaction.Type.ALL) {
             ArrayList<Transaction> result = new ArrayList<>();
             for (Transaction transaction: transactions) {
@@ -89,11 +97,21 @@ public class TransactionListPresenter implements ITransactionListPresenter, Acco
     }
 
     @Override
-    public double getBudget() {
+    public void refreshAccount() {
+        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this, context).execute();
+    }
+
+    @Override
+    public void getBudget(Lambda l) {
         if(account == null) {
             Log.e("acc null trLiPr gbu", "null");
         }
-        return account.getBudget() - transactionInteractor.getTotalAmount();
+        new TransactionListInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                return l.pass(account.getBudget() - TransactionAmount.getTotalAmount((ArrayList<Transaction>) o));
+            }
+        }), context).execute();
     }
 
     @Override

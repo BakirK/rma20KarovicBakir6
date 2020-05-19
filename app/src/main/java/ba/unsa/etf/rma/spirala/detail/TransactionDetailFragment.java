@@ -60,6 +60,7 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
         View view = inflater.inflate(R.layout.fragment_transaction_detail, container, false);
         preventFirstFire = true;
         initFields(view);
+        getPresenter();
         if (getArguments() != null && getArguments().containsKey("transaction")) {
             getPresenter().setTransaction(getArguments().getParcelable("transaction"));
             Transaction t = getPresenter().getTransaction();

@@ -5,7 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class TransactionModel {
-    public static ArrayList<Transaction> transactions = new ArrayList<Transaction>() {
+    /*public static ArrayList<Transaction> transactions = new ArrayList<Transaction>() {
         {
             Calendar c = Calendar.getInstance();
             add(new Transaction(c.getTime(), 3.141, "Pi", Transaction.Type.PURCHASE, "Matematicka konstanta", null, null));
@@ -83,5 +83,5 @@ public class TransactionModel {
             c.set(2020, 1, 1);
             add(new Transaction(c.getTime(), 0.27, "REGULARINCOME4", Transaction.Type.REGULARINCOME, null, 30, endDate7));
         }
-    };
+    };*/
 }
