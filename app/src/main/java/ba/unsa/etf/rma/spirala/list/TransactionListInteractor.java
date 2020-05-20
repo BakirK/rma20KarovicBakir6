@@ -30,6 +30,7 @@ public class TransactionListInteractor extends AsyncTask<String, Integer, Void> 
     public TransactionListInteractor(Lambda lambda, Context context) {
         this.lambda = lambda;
         this.context = context;
+        transactions = new ArrayList<>();
     }
 
     @Override
@@ -42,7 +43,7 @@ public class TransactionListInteractor extends AsyncTask<String, Integer, Void> 
         int page = 0;
         outer: while(true) {
             String url1 = context.getString(R.string.root) + "/account/" +  context.getString(R.string.api_id)
-                    + "/transacions?page=" + page;
+                    + "/transactions?page=" + page;
             try {
                 URL url = new URL(url1);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -50,10 +51,10 @@ public class TransactionListInteractor extends AsyncTask<String, Integer, Void> 
                 String result = Util.convertStreamToString(in);
                 JSONObject jo = new JSONObject(result);
                 JSONArray results = jo.getJSONArray("transactions");
-                if(result.length() == 0) {
+                if(results.length() == 0) {
                     break outer;
                 } else page++;
-                for (int i = 0; i < result.length(); i++) {
+                for (int i = 0; i < results.length(); i++) {
                     transactions.add(new Transaction(results.getJSONObject(i)));
                 }
             } catch (MalformedURLException e) {

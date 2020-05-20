@@ -223,96 +223,99 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
                         return;
                     }
                 }
-                boolean overMonthLimit = getPresenter().overMonthLimit(
+                /*WARNING - SPANISH SPAGHETTI LANGUAGE AHEAD* - DANGER*/
+                getPresenter().overMonthLimit(
                         new Lambda(new ILambda() {
                             @Override
                             public Object callback(Object o) {
-                                Double monthExpenses = TransactionAmount.getMonthlyAmount((ArrayList<Transaction>) o, date);
-                                monthExpenses -= finalThisAmount;
-                                monthExpenses += finalAmount;
-                                Log.d("month total", Double.toString(monthExpenses));
-                                transaction = (Transaction)o;
+                                boolean overMonthLimit = (Boolean)o;
+                                getPresenter().overGlobalLimit(
+                                        new Lambda(new ILambda() {
+                                            @Override
+                                            public Object callback(Object o) {
+                                                boolean overGlobalLimit = (Boolean)o;
+                                                if(overGlobalLimit || overMonthLimit) {
+                                                    String text = "Total expenses are over ";
+                                                    if(overMonthLimit) {
+                                                        text += "monthly limit ";
+                                                        if(overGlobalLimit) {
+                                                            text += "and global limit";
+                                                        }
+                                                    } else if(overGlobalLimit) {
+                                                        text += "global limit";
+                                                    }
+
+                                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                                    builder.setMessage("Continue anyway?").setTitle(text);
+                                                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                        public void onClick(DialogInterface dialog, int id) {
+                                                            getPresenter().updateParameters(
+                                                                    inputDate,
+                                                                    amountDouble,
+                                                                    title.getText().toString(),
+                                                                    type,
+                                                                    itemDescription.getText().toString(),
+                                                                    interval,
+                                                                    inputEndDate
+                                                            );
+                                                            onItemClick.updateTransactionListData();
+                                                            if (getArguments() != null && getArguments().containsKey("transaction")) {
+                                                                resetBackgroundColor();
+                                                                setIcon(type);
+                                                                Toast.makeText(getActivity(), "Changes saved", Toast.LENGTH_LONG).show();
+                                                            } else {
+                                                                onItemClick.displayAdded();
+                                                            }
+                                                        }
+                                                    });
+                                                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                                        public void onClick(DialogInterface dialog, int id) {
+                                                            showToast("Saving cancelled");
+                                                        }
+                                                    });
+                                                    AlertDialog alert = builder.create();
+                                                    alert.show();
+
+                                                } else {
+                                                    getPresenter().updateParameters(
+                                                            inputDate,
+                                                            amountDouble,
+                                                            title.getText().toString(),
+                                                            type,
+                                                            itemDescription.getText().toString(),
+                                                            interval,
+                                                            inputEndDate
+                                                    );
+                                                    onItemClick.updateTransactionListData();
+                                                    if(getArguments() != null && getArguments().containsKey("transaction")) {
+                                                        resetBackgroundColor();
+                                                        setIcon(type);
+                                                        Toast.makeText(getActivity(), "Changes saved", Toast.LENGTH_LONG).show();
+                                                    } else {
+                                                        onItemClick.displayAdded();
+                                                    }
+                                                }
+                                                return 0;
+                                            }
+                                        }),
+                                        inputDate,
+                                        amountDouble,
+                                        title.getText().toString(),
+                                        type,
+                                        itemDescription.getText().toString(),
+                                        interval,
+                                        inputEndDate);
                                 return 0;
                             }
-                        },
+                        }),
                         inputDate,
                         amountDouble,
                         title.getText().toString(),
                         type,
                         itemDescription.getText().toString(),
                         interval,
-                        inputEndDate);
-                boolean overGlobalLimit = getPresenter().overGlobalLimit(
-                        inputDate,
-                        amountDouble,
-                        title.getText().toString(),
-                        type,
-                        itemDescription.getText().toString(),
-                        interval,
-                        inputEndDate);
-                if(overGlobalLimit || overMonthLimit) {
-                    String text = "Total expenses are over ";
-                    if(overMonthLimit) {
-                        text += "monthly limit ";
-                        if(overGlobalLimit) {
-                            text += "and global limit";
-                        }
-                    } else if(overGlobalLimit) {
-                        text += "global limit";
-                    }
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setMessage("Continue anyway?").setTitle(text);
-                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            getPresenter().updateParameters(
-                                    inputDate,
-                                    amountDouble,
-                                    title.getText().toString(),
-                                    type,
-                                    itemDescription.getText().toString(),
-                                    interval,
-                                    inputEndDate
-                            );
-                            onItemClick.updateTransactionListData();
-                            if (getArguments() != null && getArguments().containsKey("transaction")) {
-                                resetBackgroundColor();
-                                setIcon(type);
-                                Toast.makeText(getActivity(), "Changes saved", Toast.LENGTH_LONG).show();
-                            } else {
-                                onItemClick.displayAdded();
-                            }
-                        }
-                    });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            showToast("Saving cancelled");
-                        }
-                    });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-
-                } else {
-                    getPresenter().updateParameters(
-                            inputDate,
-                            amountDouble,
-                            title.getText().toString(),
-                            type,
-                            itemDescription.getText().toString(),
-                            interval,
-                            inputEndDate
-                    );
-                    onItemClick.updateTransactionListData();
-                    if(getArguments() != null && getArguments().containsKey("transaction")) {
-                        resetBackgroundColor();
-                        setIcon(type);
-                        Toast.makeText(getActivity(), "Changes saved", Toast.LENGTH_LONG).show();
-                    } else {
-                        onItemClick.displayAdded();
-                    }
-                }
-
-
+                        inputEndDate
+                );
             }
         });
 

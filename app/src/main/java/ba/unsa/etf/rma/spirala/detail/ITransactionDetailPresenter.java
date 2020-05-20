@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.data.Transaction;
+import ba.unsa.etf.rma.spirala.util.Lambda;
 
 public interface ITransactionDetailPresenter {
     void updateParameters(Date date, Double amount, String title, Transaction.Type type, @Nullable String itemDescription,
@@ -13,8 +14,8 @@ public interface ITransactionDetailPresenter {
     void deleteTransaction();
     void setTransaction(Transaction t);
     Transaction getTransaction();
-    boolean overMonthLimit(Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription,
-                            @Nullable Integer transactionInterval, @Nullable Date endDate);
-    boolean overGlobalLimit(Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription,
+    void overMonthLimit(Lambda lambda, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription,
+                        @Nullable Integer transactionInterval, @Nullable Date endDate);
+    void overGlobalLimit(Lambda lambda, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription,
                             @Nullable Integer transactionInterval, @Nullable Date endDate);
 }

@@ -11,7 +11,6 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
@@ -25,6 +24,8 @@ import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.listeners.OnSwipeTouchListener;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
+import ba.unsa.etf.rma.spirala.util.ILambda;
+import ba.unsa.etf.rma.spirala.util.Lambda;
 
 public class TransactionListFragment extends Fragment implements ITransactionListView {
     private TransactionListAdapter adapter;
@@ -112,11 +113,6 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         });
 
         AdapterView.OnItemClickListener listItemClickListener = (parent, view, position, id) -> {
-            /*Intent transactionDetailIntent = new Intent(MainActivity.this, TransactionDetailActivity.class);
-            transactionDetailIntent.setAction(Intent.ACTION_ATTACH_DATA);
-            Transaction transaction = adapter.getTransactionAt(position);
-            transactionDetailIntent.putExtra("TRANSACTION", transaction);
-            MainActivity.this.startActivity(transactionDetailIntent);*/
             if(previousSelectedItemIndex == position) {
                 onItemClick.displayTransaction(null);
                 previousSelectedItemIndex = -1;
@@ -204,6 +200,15 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
     public void updateTransactionListData() {
         getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
-        textViewAmount.setText(String.format("%.2f", getPresenter().getBudget()));
+        getPresenter().getBudget(
+                new Lambda(new ILambda() {
+                    @Override
+                    public Object callback(Object o) {
+                        Double budget = (Double) o;
+                        textViewAmount.setText(String.format("%.2f", budget));
+                        return 0;
+                    }
+                })
+        );
     }
 }

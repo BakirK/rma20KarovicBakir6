@@ -12,7 +12,6 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 
 import ba.unsa.etf.rma.spirala.R;
-import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
 import ba.unsa.etf.rma.spirala.util.Lambda;
 import ba.unsa.etf.rma.spirala.util.Requests;
 
@@ -44,10 +43,22 @@ public class TransactionUpdateInteractor extends AsyncTask<String, Integer, Void
             jsonParam.put("date", strings[0]);
             jsonParam.put("title", strings[1]);
             jsonParam.put("amount", strings[2]);
-            jsonParam.put("endDate", strings[3]);
-            jsonParam.put("itemDescription", strings[4]);
-            jsonParam.put("transactionInterval", strings[5]);
-            jsonParam.put("typeId", strings[6]);
+            if(strings[3] == null || strings[3].equals("null")) {
+                jsonParam.put("endDate", "null");
+            } else {
+                jsonParam.put("endDate", strings[3]);
+            }
+            if(strings[4] == null || strings[4].equals("null")) {
+                jsonParam.put("itemDescription", "null");
+            } else {
+                jsonParam.put("itemDescription", strings[4]);
+            }
+            if(strings[5] == null || strings[5].equals("null")) {
+                jsonParam.put("transactionInterval", "null");
+            } else {
+                jsonParam.put("transactionInterval", strings[5]);
+            }
+            jsonParam.put("TransactionTypeId", strings[6]);
             String response = Requests.post(url1, jsonParam);
             transaction = new Transaction(new JSONObject(response));
         } catch (MalformedURLException e) {

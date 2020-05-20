@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.spirala.graphs;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.github.mikephil.charting.data.Entry;
 
@@ -10,29 +11,25 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
-import ba.unsa.etf.rma.spirala.budget.IBudgetView;
-import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.Transaction;
-import ba.unsa.etf.rma.spirala.list.ITransactionListInteractor;
 import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
+import ba.unsa.etf.rma.spirala.util.ILambda;
+import ba.unsa.etf.rma.spirala.util.Lambda;
 
 public class GraphPresenter implements IGraphPresenter {
-    private ITransactionListInteractor transactionListInteractor;
     private Context context;
     private IGraphView view;
+
     public GraphPresenter(IGraphView view, Context context) {
-        this.transactionListInteractor = new TransactionListInteractor();
         this.context = context;
         this.view = view;
-        //refreshAccount();
     }
 
     @Override
-    public List<Entry> getDailyExpensesEntries() {
+    public void getDailyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(24);
-        ArrayList<Transaction> transactions = transactionListInteractor.get();
         for (Transaction transaction: transactions) {
             if(!Transaction.isIncome(transaction.getType())) {
                 if(Transaction.isRegular(transaction.getType()) && Transaction.dateOverlapping(today, transaction)) {
@@ -47,7 +44,6 @@ public class GraphPresenter implements IGraphPresenter {
                             entries.setElementAt(entries.get(hour) + transaction.getAmount().floatValue(), hour);
                         }
                     }
-
                 } else if(Transaction.sameDay(today, transaction.getDate())) {
                     Calendar date = Transaction.toCalendar(transaction.getDate().getTime());
                     int hour = date.get(Calendar.HOUR);
@@ -69,11 +65,52 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        return sumEntries;
+        lambda.pass(sumEntries);
+    }
+
+    public void getDailyEntries(Lambda expenses, Lambda income, Lambda budget) {
+        new TransactionListInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
+                getDailyExpensesEntries(transactions, expenses);
+                getDailyIncomeEntries(transactions, income);
+                getDailyBudgetEntries(transactions, budget);
+                return 0;
+            }
+        }), context).execute();
     }
 
     @Override
-    public List<Entry> getMonthlyExpensesEntries() {
+    public void getMonthlyEntries(Lambda expenses, Lambda income, Lambda budget) {
+        new TransactionListInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
+                getMonthlyExpensesEntries(transactions, expenses);
+                getMonthlyIncomeEntries(transactions, income);
+                getMonthlyBudgetEntries(transactions, budget);
+                return 0;
+            }
+        }), context).execute();
+    }
+
+    @Override
+    public void getWeeklyEntries(Lambda expenses, Lambda income, Lambda budget) {
+        new TransactionListInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
+                getWeeklyExpensesEntries(transactions, expenses);
+                getWeeklyIncomeEntries(transactions, income);
+                getWeeklyBudgetEntries(transactions, budget);
+                return 0;
+            }
+        }), context).execute();
+    }
+
+    @Override
+    public void getMonthlyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
 
@@ -81,13 +118,11 @@ public class GraphPresenter implements IGraphPresenter {
         firstDay.set(Calendar.DAY_OF_MONTH, 1);
         Date firstDayDate = firstDay.getTime();
 
-        Calendar lastDay = firstDay;
+        Calendar lastDay = Transaction.toCalendar(today.getTime());
         lastDay.set(Calendar.DAY_OF_MONTH, lastDay.getActualMaximum(Calendar.DAY_OF_MONTH));
         Date lastDayDate = lastDay.getTime();
 
         entries.setSize(lastDay.getActualMaximum(Calendar.DAY_OF_MONTH));
-
-        ArrayList<Transaction> transactions = transactionListInteractor.get();
         for (Transaction transaction: transactions) {
             if(!Transaction.isIncome(transaction.getType())) {
                 if(Transaction.isRegular(transaction.getType()) && Transaction.dateOverlapping(today, transaction)) {
@@ -137,11 +172,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        return sumEntries;
+        lambda.pass(sumEntries);
     }
 
     @Override
-    public List<Entry> getWeeklyExpensesEntries() {
+    public void getWeeklyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(7);
@@ -156,8 +191,6 @@ public class GraphPresenter implements IGraphPresenter {
         Calendar lastDay = firstDay;
         lastDay.add(Calendar.DAY_OF_MONTH, 7);
         Date lastDayDate = lastDay.getTime();
-
-        ArrayList<Transaction> transactions = transactionListInteractor.get();
         for (Transaction transaction: transactions) {
             if(!Transaction.isIncome(transaction.getType())) {
                 if(Transaction.isRegular(transaction.getType()) && Transaction.dateOverlapping(today, transaction)) {
@@ -220,15 +253,14 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        return sumEntries;
+        lambda.pass(sumEntries);
     }
 
     @Override
-    public List<Entry> getDailyIncomeEntries() {
+    public void getDailyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(24);
-        ArrayList<Transaction> transactions = transactionListInteractor.get();
         for (Transaction transaction: transactions) {
             if(Transaction.isIncome(transaction.getType())) {
                 if(Transaction.isRegular(transaction.getType()) && Transaction.dateOverlapping(today, transaction)) {
@@ -265,11 +297,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        return sumEntries;
+        lambda.pass(sumEntries);
     }
 
     @Override
-    public List<Entry> getMonthlyIncomeEntries() {
+    public void getMonthlyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
 
@@ -282,8 +314,6 @@ public class GraphPresenter implements IGraphPresenter {
         Date lastDayDate = lastDay.getTime();
 
         entries.setSize(lastDay.getActualMaximum(Calendar.DAY_OF_MONTH));
-
-        ArrayList<Transaction> transactions = transactionListInteractor.get();
         for (Transaction transaction: transactions) {
             if(Transaction.isIncome(transaction.getType())) {
                 if(Transaction.isRegular(transaction.getType()) && Transaction.dateOverlapping(today, transaction)) {
@@ -333,11 +363,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        return sumEntries;
+        lambda.pass(sumEntries);
     }
 
     @Override
-    public List<Entry> getWeeklyIncomeEntries() {
+    public void getWeeklyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(7);
@@ -352,8 +382,6 @@ public class GraphPresenter implements IGraphPresenter {
         Calendar lastDay = firstDay;
         lastDay.add(Calendar.DAY_OF_MONTH, 7);
         Date lastDayDate = lastDay.getTime();
-
-        ArrayList<Transaction> transactions = transactionListInteractor.get();
         for (Transaction transaction: transactions) {
             if(Transaction.isIncome(transaction.getType())) {
                 if(Transaction.isRegular(transaction.getType()) && Transaction.dateOverlapping(today, transaction)) {
@@ -416,15 +444,14 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        return sumEntries;
+        lambda.pass(sumEntries);
     }
 
     @Override
-    public List<Entry> getDailyBudgetEntries() {
+    public void getDailyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(24);
-        ArrayList<Transaction> transactions = transactionListInteractor.get();
         for (Transaction transaction: transactions) {
             if(Transaction.isRegular(transaction.getType()) && Transaction.dateOverlapping(today, transaction)) {
                 int daysBetween = Transaction.getDaysBetween(transaction.getDate(), today);
@@ -477,11 +504,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        return sumEntries;
+        lambda.pass(sumEntries);
     }
 
     @Override
-    public List<Entry> getMonthlyBudgetEntries() {
+    public void getMonthlyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
 
@@ -494,8 +521,6 @@ public class GraphPresenter implements IGraphPresenter {
         Date lastDayDate = lastDay.getTime();
 
         entries.setSize(lastDay.getActualMaximum(Calendar.DAY_OF_MONTH));
-
-        ArrayList<Transaction> transactions = transactionListInteractor.get();
         for (Transaction transaction: transactions) {
             if(Transaction.isRegular(transaction.getType()) && Transaction.dateOverlapping(today, transaction)) {
                 Integer daysBetween;
@@ -561,11 +586,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        return sumEntries;
+        lambda.pass(sumEntries);
     }
 
     @Override
-    public List<Entry> getWeeklyBudgetEntries() {
+    public void getWeeklyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(7);
@@ -580,8 +605,6 @@ public class GraphPresenter implements IGraphPresenter {
         Calendar lastDay = firstDay;
         lastDay.add(Calendar.DAY_OF_MONTH, 7);
         Date lastDayDate = lastDay.getTime();
-
-        ArrayList<Transaction> transactions = transactionListInteractor.get();
         for (Transaction transaction: transactions) {
             if(Transaction.isRegular(transaction.getType()) && Transaction.dateOverlapping(today, transaction)) {
                 Float amount;
@@ -669,6 +692,6 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        return sumEntries;
+        lambda.pass(sumEntries);
     }
 }

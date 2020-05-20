@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.spirala.data;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,9 +14,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.util.Lambda;
@@ -29,6 +28,7 @@ public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> 
     public TransactionSortInteractor(Lambda lambda, Context context) {
         this.lambda = lambda;
         this.context = context;
+        transactions = new ArrayList<>();
     }
 
     @Override
@@ -42,13 +42,13 @@ public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> 
         outer: while(true) {
 
             String url1 = context.getString(R.string.root) + "/account/" +  context.getString(R.string.api_id)
-                    + "/transacions/filter?page=" + page;
-            if(strings[0] != null) url1 += "&typeId=" + strings[0];
+                    + "/transactions/filter?page=" + page;
+            if(strings[0] != null && strings[0] != "0") url1 += "&typeId=" + strings[0];
             if(strings[1] != null) url1 += "&month=" + strings[1];
             if(strings[2] != null) url1 += "&year=" + strings[2];
             if(strings[3] != null && strings[4] != null) {
                 url1 += "&sort=" + strings[3];
-                url1 += "&.=" + strings[4];
+                url1 += "." + strings[4];
             }
             try {
                 URL url = new URL(url1);
@@ -57,10 +57,10 @@ public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> 
                 String result = Util.convertStreamToString(in);
                 JSONObject jo = new JSONObject(result);
                 JSONArray results = jo.getJSONArray("transactions");
-                if(result.length() == 0) {
+                if(results.length() == 0) {
                     break outer;
                 } else page++;
-                for (int i = 0; i < result.length(); i++) {
+                for (int i = 0; i < results.length(); i++) {
                     transactions.add(new Transaction(results.getJSONObject(i)));
                 }
             } catch (MalformedURLException e) {

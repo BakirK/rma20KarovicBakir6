@@ -1,19 +1,24 @@
 package ba.unsa.etf.rma.spirala.graphs;
 
-import com.github.mikephil.charting.data.Entry;
+import java.util.ArrayList;
 
-import java.util.List;
+import ba.unsa.etf.rma.spirala.data.Transaction;
+import ba.unsa.etf.rma.spirala.util.Lambda;
 
 public interface IGraphPresenter {
-    List<Entry> getDailyExpensesEntries();
-    List<Entry> getMonthlyExpensesEntries();
-    List<Entry> getWeeklyExpensesEntries();
+    void getDailyEntries(Lambda expenses, Lambda income, Lambda budget);
+    void getMonthlyEntries(Lambda expenses, Lambda income, Lambda budget);
+    void getWeeklyEntries(Lambda expenses, Lambda income, Lambda budget);
 
-    List<Entry> getDailyIncomeEntries();
-    List<Entry> getMonthlyIncomeEntries();
-    List<Entry> getWeeklyIncomeEntries();
+    void getDailyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda);
+    void getMonthlyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda);
+    void getWeeklyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda);
 
-    List<Entry> getDailyBudgetEntries();
-    List<Entry> getMonthlyBudgetEntries();
-    List<Entry> getWeeklyBudgetEntries();
+    void getDailyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda);
+    void getMonthlyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda);
+    void getWeeklyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda);
+
+    void getDailyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda);
+    void getMonthlyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda);
+    void getWeeklyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda);
 }

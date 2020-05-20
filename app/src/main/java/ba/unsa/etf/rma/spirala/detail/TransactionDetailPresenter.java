@@ -14,13 +14,12 @@ import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
-import ba.unsa.etf.rma.spirala.data.IAccountInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.data.TransactionAmount;
 import ba.unsa.etf.rma.spirala.data.TransactionDeleteInteractor;
+import ba.unsa.etf.rma.spirala.data.TransactionPostInteractor;
 import ba.unsa.etf.rma.spirala.data.TransactionSortInteractor;
 import ba.unsa.etf.rma.spirala.data.TransactionUpdateInteractor;
-import ba.unsa.etf.rma.spirala.list.ITransactionListInteractor;
 import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
 import ba.unsa.etf.rma.spirala.util.ILambda;
 import ba.unsa.etf.rma.spirala.util.Lambda;
@@ -64,9 +63,16 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
         String date = Transaction.format.format(transaction.getDate());
         String title = transaction.getTitle();
         String amount = transaction.getAmount().toString();
-        String endDate = Transaction.format.format(transaction.getEndDate());
+        String endDate = null;
+        if(transaction.getEndDate() != null) {
+            endDate = Transaction.format.format(transaction.getEndDate());
+        }
+
         String itemDescription = transaction.getItemDescription();
-        String interval = transaction.getTransactionInterval().toString();
+        String interval = null;
+        if(transaction.getTransactionInterval() != null) {
+            interval = transaction.getTransactionInterval().toString();
+        }
         String typeId = Integer.toString(Transaction.getTypeId(transaction.getType()));
         String transactionId = Integer.toString(transaction.getId());
 
@@ -90,7 +96,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     }
 
     @Override
-    public boolean overMonthLimit(Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
+    public void overMonthLimit(Lambda lambda, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
         Double thisAmount = 0.;
         if(this.transaction != null) {
             if(Transaction.isIncome(this.transaction.getType())) {
@@ -130,18 +136,16 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
                 monthExpenses -= finalThisAmount;
                 monthExpenses += finalAmount;
                 Log.d("month total", Double.toString(monthExpenses));
-                transaction = (Transaction)o;
+                boolean over = account.getMonthLimit() < monthExpenses;
+                lambda.pass(over);
                 return 0;
             }
         }), context).execute(null, month, year, null, null);
-
-        Log.d("month limit", Double.toString(account.getMonthLimit()));
-        return account.getMonthLimit() < monthExpenses;
     }
 
 
     @Override
-    public boolean overGlobalLimit(Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
+    public void overGlobalLimit(Lambda lambda, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
         Double thisAmount = 0.;
         if(this.transaction != null) {
             if(Transaction.isIncome(this.transaction.getType())) {
@@ -161,17 +165,46 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
             amount = amount * Transaction.getDaysBetween(date, endDate);
         }
 
-        Double totalExpenses = transactionInteractor.getTotalAmount() - thisAmount + amount;
-        Log.d("global total", Double.toString(totalExpenses));
-        Log.d("global limit", Double.toString(account.getTotalLimit()));
-        return totalExpenses > account.getTotalLimit();
+
+        Double finalThisAmount = thisAmount;
+        Double finalAmount = amount;
+        new TransactionListInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                Double totalExpenses = TransactionAmount.getTotalAmount((ArrayList<Transaction>) o);
+                totalExpenses -= finalThisAmount;
+                totalExpenses += finalAmount;
+                boolean over = totalExpenses > account.getTotalLimit();
+                lambda.pass(over);
+                return 0;
+            }
+        }), context).execute();
     }
 
     @Override
     public void updateParameters(Date date, Double amount, String title, Transaction.Type type, @Nullable String itemDescription,
                                  @Nullable Integer transactionInterval, @Nullable Date endDate) {
         if(this.transaction == null) {
-            this.transaction = transactionInteractor.createTransaction(date, amount, title, type, itemDescription, transactionInterval, endDate);
+            String dateStr = Transaction.format.format(date);
+            String titleStr = title;
+            String amountStr = amount.toString();
+            String endDateStr = null;
+            if(endDate != null) {
+                endDateStr = Transaction.format.format(endDate);
+            }
+            String itemDescriptionStr = itemDescription;
+            String intervalStr = null;
+            if(transactionInterval != null) {
+                intervalStr = transactionInterval.toString();
+            }
+            String typeIdStr = Integer.toString(Transaction.getTypeId(type));
+            new TransactionPostInteractor(new Lambda(new ILambda() {
+                @Override
+                public Object callback(Object o) {
+                    transaction = (Transaction)o;
+                    return 0;
+                }
+            }), context).execute(dateStr, titleStr, amountStr, endDateStr, itemDescriptionStr, intervalStr, typeIdStr);
         } else {
             transaction.setTitle(title);
             transaction.setAmount(amount);

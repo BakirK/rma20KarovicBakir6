@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.spirala.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -163,10 +164,10 @@ public class Transaction implements Parcelable {
         try {
             String dateStr = transaction.getString("date");
             String endDateStr = transaction.getString("endDate");
-            if(endDateStr != null) {
+            if(endDateStr != "null") {
                 endDate = Transaction.format.parse(endDateStr.substring(0, 10));
             }
-            if(dateStr != null) {
+            if(dateStr != "null") {
                 date = Transaction.format.parse(dateStr.substring(0, 10));
             }
         } catch (ParseException e) {
@@ -176,7 +177,12 @@ public class Transaction implements Parcelable {
         this.title = transaction.getString("title");
         this.type = Transaction.getTypeById(transaction.getInt("TransactionTypeId"));
         this.itemDescription = transaction.getString("itemDescription");
-        this.transactionInterval = transaction.getInt("transactionInterval");
+        if(this.itemDescription.equals("null")) this.itemDescription = "";
+        Log.d("jsono", transaction.toString());
+        Object interval = transaction.get("transactionInterval");
+        if(interval != null && !interval.toString().equals("null")) {
+            this.transactionInterval = Integer.parseInt(interval.toString());
+        } else this.transactionInterval = null;
         this.date = date;
         this.endDate = endDate;
     }

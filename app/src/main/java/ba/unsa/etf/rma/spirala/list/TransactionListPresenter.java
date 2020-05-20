@@ -48,7 +48,6 @@ public class TransactionListPresenter implements ITransactionListPresenter {
 
     @Override
     public void refreshTransactions(Transaction.Type t, String orderBy, Date d) {
-        String typeId = Integer.toString(Transaction.getTypeId(t));
         Calendar c = Transaction.toCalendar(d.getTime());
         String month = String.valueOf(c.get(Calendar.MONTH)+1);
         String year = String.valueOf(c.get(Calendar.YEAR));
@@ -68,15 +67,36 @@ public class TransactionListPresenter implements ITransactionListPresenter {
             order="desc";
         }
 
-        new TransactionSortInteractor(new Lambda(new ILambda() {
-            @Override
-            public Object callback(Object o) {
-                transactions = (ArrayList<Transaction>) o;
-                view.setTransactions(transactions);
-                view.notifyTransactionListDataSetChanged();
-                return 0;
-            }
-        }), context).execute(typeId, month, year, el, order);
+        if(t != null) {
+            String typeId = Integer.toString(Transaction.getTypeId(t));
+            new TransactionSortInteractor(new Lambda(new ILambda() {
+                @Override
+                public Object callback(Object o) {
+                    transactions = (ArrayList<Transaction>) o;
+                    if(transactions.size() > 0) {
+                        Log.d("a", "a");
+                    }
+                    view.setTransactions(transactions);
+                    view.notifyTransactionListDataSetChanged();
+                    return 0;
+                }
+            }), context).execute(typeId, month, year, el, order);
+        } else {
+            new TransactionSortInteractor(new Lambda(new ILambda() {
+                @Override
+                public Object callback(Object o) {
+                    transactions = (ArrayList<Transaction>) o;
+                    if(transactions.size() > 0) {
+                        Log.d("a", "a");
+                    }
+                    view.setTransactions(transactions);
+                    view.notifyTransactionListDataSetChanged();
+                    return 0;
+                }
+            }), context).execute(null, month, year, el, order);
+        }
+
+
     }
 
     @Override

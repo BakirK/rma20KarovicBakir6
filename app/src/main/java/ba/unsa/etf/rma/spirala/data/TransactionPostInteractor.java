@@ -17,7 +17,7 @@ public class TransactionPostInteractor extends AsyncTask<String, Integer, Void> 
     Transaction transaction;
 
 
-    TransactionPostInteractor(Lambda lambda, Context context) {
+    public TransactionPostInteractor(Lambda lambda, Context context) {
         this.lambda = lambda;
         this.context = context;
     }
@@ -36,9 +36,9 @@ public class TransactionPostInteractor extends AsyncTask<String, Integer, Void> 
             jsonParam.put("endDate", strings[3]);
             jsonParam.put("itemDescription", strings[4]);
             jsonParam.put("transactionInterval", strings[5]);
-            jsonParam.put("typeId", strings[6]);
+            jsonParam.put("TransactionTypeId", strings[6]);
             String response = Requests.post(url1, jsonParam);
-            transaction = TransactionListInteractor.extractTransaction(new JSONObject(response));
+            transaction = new Transaction(new JSONObject(response));
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
