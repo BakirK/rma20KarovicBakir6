@@ -12,7 +12,6 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 
 import ba.unsa.etf.rma.spirala.R;
-import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
 import ba.unsa.etf.rma.spirala.util.Lambda;
 import ba.unsa.etf.rma.spirala.util.Requests;
 
@@ -21,7 +20,7 @@ public class TransactionDeleteInteractor extends AsyncTask<String, Integer, Void
     private Lambda lambda;
     JSONObject jo = null;
 
-    TransactionDeleteInteractor(Lambda lambda, Context context) {
+    public TransactionDeleteInteractor(Lambda lambda, Context context) {
         this.lambda = lambda;
         this.context = context;
     }

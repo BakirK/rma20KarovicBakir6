@@ -5,55 +5,78 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
 import ba.unsa.etf.rma.spirala.data.IAccountInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
+import ba.unsa.etf.rma.spirala.data.TransactionAmount;
+import ba.unsa.etf.rma.spirala.data.TransactionDeleteInteractor;
+import ba.unsa.etf.rma.spirala.data.TransactionSortInteractor;
+import ba.unsa.etf.rma.spirala.data.TransactionUpdateInteractor;
 import ba.unsa.etf.rma.spirala.list.ITransactionListInteractor;
 import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
+import ba.unsa.etf.rma.spirala.util.ILambda;
+import ba.unsa.etf.rma.spirala.util.Lambda;
 
-public class TransactionDetailPresenter implements ITransactionDetailPresenter, AccountInteractor.OnAccountSearchDone {
-    private ITransactionListInteractor transactionInteractor;
+public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     private Context context;
     private Transaction transaction;
     private Account account;
 
     public TransactionDetailPresenter(Context context) {
-        new AccountInteractor((AccountInteractor.OnAccountSearchDone)this, context).execute();
-        transactionInteractor = new TransactionListInteractor();
+        new AccountInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                account = (Account) o;
+                return 0;
+            }
+        }), context).execute();
         this.context = context;
     }
 
     @Override
     public void deleteTransaction() {
         int id = transaction.getId();
-        ArrayList<Transaction> transactions = transactionInteractor.get();
-        int i = 0;
-        for (Transaction transaction : transactions) {
-            if(transaction.getId() == id) {
-                transactionInteractor.remove(i);
-                return;
+        new TransactionDeleteInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                JSONObject jo = (JSONObject) o;
+                try {
+                    if(jo.getString("error") != null) {
+                        Log.d("d", "tr not found");
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return 0;
             }
-            i++;
-        }
+        }), context).execute(Integer.toString(id));
     }
 
     private void updateTransaction() {
-        ArrayList<Transaction> transactions = transactionInteractor.get();
-        int i = 0;
-        int id = this.transaction.getId();
-        for (Transaction t : transactions) {
-            if(t.getId() == id) {
-                transactionInteractor.set(i, this.transaction);
-                Log.d("set", "index" + Integer.toString(i));
-                return;
+        String date = Transaction.format.format(transaction.getDate());
+        String title = transaction.getTitle();
+        String amount = transaction.getAmount().toString();
+        String endDate = Transaction.format.format(transaction.getEndDate());
+        String itemDescription = transaction.getItemDescription();
+        String interval = transaction.getTransactionInterval().toString();
+        String typeId = Integer.toString(Transaction.getTypeId(transaction.getType()));
+        String transactionId = Integer.toString(transaction.getId());
+
+        new TransactionUpdateInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                transaction = (Transaction)o;
+                return 0;
             }
-            i++;
-        }
-        Log.d("set", "NOT FOUND" + Integer.toString(i));
+        }), context).execute(date, title, amount, endDate, itemDescription, interval, typeId, transactionId);
     }
 
     @Override
@@ -93,9 +116,25 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter, 
             int averageNumberOfDaysPerMonth = daysBetween/(monthsBetween+1);
             amount = amount * averageNumberOfDaysPerMonth / transactionInterval;
         }
-        Log.d("interactor month", transactionInteractor.getMonthlyAmount(date).toString() );
-        Double monthExpenses = transactionInteractor.getMonthlyAmount(date) - thisAmount + amount;
-        Log.d("month total", Double.toString(monthExpenses));
+
+        Calendar c = Transaction.toCalendar(date.getTime());
+        String month = String.valueOf(c.get(Calendar.MONTH)+1);
+        String year = String.valueOf(c.get(Calendar.YEAR));
+
+        Double finalThisAmount = thisAmount;
+        Double finalAmount = amount;
+        new TransactionSortInteractor(new Lambda(new ILambda() {
+            @Override
+            public Object callback(Object o) {
+                Double monthExpenses = TransactionAmount.getMonthlyAmount((ArrayList<Transaction>) o, date);
+                monthExpenses -= finalThisAmount;
+                monthExpenses += finalAmount;
+                Log.d("month total", Double.toString(monthExpenses));
+                transaction = (Transaction)o;
+                return 0;
+            }
+        }), context).execute(null, month, year, null, null);
+
         Log.d("month limit", Double.toString(account.getMonthLimit()));
         return account.getMonthLimit() < monthExpenses;
     }
@@ -121,6 +160,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter, 
         if(Transaction.isRegular(type)) {
             amount = amount * Transaction.getDaysBetween(date, endDate);
         }
+
         Double totalExpenses = transactionInteractor.getTotalAmount() - thisAmount + amount;
         Log.d("global total", Double.toString(totalExpenses));
         Log.d("global limit", Double.toString(account.getTotalLimit()));
@@ -155,8 +195,4 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter, 
 
     }
 
-    @Override
-    public void onDone(Account result) {
-        this.account = result;
-    }
 }

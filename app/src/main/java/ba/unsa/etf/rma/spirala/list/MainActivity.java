@@ -59,31 +59,12 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
 
     @Override
     protected void onResume() {
-        //TODO
-       /*
-        if(getIntent().getAction().equals(Intent.ACTION_INSERT)) {
-            Toast.makeText(this, "Transaction added.", Toast.LENGTH_LONG).show();
-        }*/
         super.onResume();
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Exit app?").setTitle("Confirmation.");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                MainActivity.this.onBackPressed();
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                Toast.makeText(MainActivity.this, "Exiting canceled", Toast.LENGTH_LONG).show();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();*/
     }
 
     @Override
@@ -150,23 +131,6 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
         //Bundle arguments = new Bundle();
         GraphsFragment graphsFragment = new GraphsFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.transactions_list, graphsFragment).addToBackStack("main").commit();
-    }
-
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-        // Save UI state changes to the savedInstanceState.
-        // This bundle will be passed to onCreate if the process is
-        // killed and restarted.
-        // etc.
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        // Restore UI state from the savedInstanceState.
-        // This bundle has also been passed to onCreate.
     }
 }
 

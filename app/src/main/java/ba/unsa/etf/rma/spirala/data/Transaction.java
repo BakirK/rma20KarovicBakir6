@@ -5,6 +5,10 @@ import android.os.Parcelable;
 
 import androidx.annotation.Nullable;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -150,6 +154,31 @@ public class Transaction implements Parcelable {
             this.transactionInterval = null;
             this.endDate = null;
         }
+    }
+
+    public Transaction(JSONObject transaction) throws JSONException {
+        this.id = transaction.getInt("id");
+        Date date = null;
+        Date endDate = null;
+        try {
+            String dateStr = transaction.getString("date");
+            String endDateStr = transaction.getString("endDate");
+            if(endDateStr != null) {
+                endDate = Transaction.format.parse(endDateStr.substring(0, 10));
+            }
+            if(dateStr != null) {
+                date = Transaction.format.parse(dateStr.substring(0, 10));
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        this.amount = transaction.getDouble("amount");
+        this.title = transaction.getString("title");
+        this.type = Transaction.getTypeById(transaction.getInt("TransactionTypeId"));
+        this.itemDescription = transaction.getString("itemDescription");
+        this.transactionInterval = transaction.getInt("transactionInterval");
+        this.date = date;
+        this.endDate = endDate;
     }
 
     public static int getTypeId(Type t) {

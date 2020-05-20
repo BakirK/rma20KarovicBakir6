@@ -22,7 +22,7 @@ public class TransactionUpdateInteractor extends AsyncTask<String, Integer, Void
     Transaction transaction;
 
 
-    TransactionUpdateInteractor(Lambda lambda, Context context) {
+    public TransactionUpdateInteractor(Lambda lambda, Context context) {
         this.lambda = lambda;
         this.context = context;
     }
@@ -49,7 +49,7 @@ public class TransactionUpdateInteractor extends AsyncTask<String, Integer, Void
             jsonParam.put("transactionInterval", strings[5]);
             jsonParam.put("typeId", strings[6]);
             String response = Requests.post(url1, jsonParam);
-            transaction = TransactionListInteractor.extractTransaction(new JSONObject(response));
+            transaction = new Transaction(new JSONObject(response));
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {

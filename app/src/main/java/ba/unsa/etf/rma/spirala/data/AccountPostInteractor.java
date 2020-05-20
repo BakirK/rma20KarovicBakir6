@@ -2,33 +2,24 @@ package ba.unsa.etf.rma.spirala.data;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
-
-import javax.net.ssl.HttpsURLConnection;
-
 import ba.unsa.etf.rma.spirala.R;
+import ba.unsa.etf.rma.spirala.util.Lambda;
 import ba.unsa.etf.rma.spirala.util.Requests;
 
 public class AccountPostInteractor extends AsyncTask<String, Integer, Void> {
     private String api_id;
-    private AccountInteractor.OnAccountSearchDone caller;
     private Account account;
+    private Lambda lambda;
     private Context context;
 
-    public AccountPostInteractor(AccountInteractor.OnAccountSearchDone p, Context context) {
+    public AccountPostInteractor(Lambda lambda, Context context) {
         this.context = context;
-        caller = p;
+        this.lambda = lambda;
+        //caller = p;
         api_id = context.getString(R.string.api_id);
     }
 
@@ -62,6 +53,6 @@ public class AccountPostInteractor extends AsyncTask<String, Integer, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        caller.onDone(account);
+        lambda.pass(account);
     }
 }

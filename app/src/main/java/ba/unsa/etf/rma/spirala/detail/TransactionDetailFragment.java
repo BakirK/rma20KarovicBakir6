@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,10 +29,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import ba.unsa.etf.rma.spirala.data.TransactionAmount;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.list.TransactionSpinnerAdapter;
+import ba.unsa.etf.rma.spirala.util.ILambda;
+import ba.unsa.etf.rma.spirala.util.Lambda;
 
 public class TransactionDetailFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
     private EditText amount;
@@ -76,22 +80,6 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
         }
         initListeners();
         return view;
-
-        /*if(getActivity().getIntent().getAction().equals(Intent.ACTION_ATTACH_DATA)) {
-            getPresenter().setTransaction((Transaction) getActivity().getIntent().getParcelableExtra("TRANSACTION"));
-        } else {
-        }*/
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        // Restore UI state from the savedInstanceState.
-        // This bundle has also been passed to onCreate.
-        /*boolean myBoolean = savedInstanceState.getBoolean("MyBoolean");
-        double myDouble = savedInstanceState.getDouble("myDouble");
-        int myInt = savedInstanceState.getInt("MyInt");
-        String myString = savedInstanceState.getString("MyString");*/
     }
 
     private void refreshFields(Transaction transaction) {
@@ -121,10 +109,6 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
         itemDescription.setText("");
         transactionInterval.setText("");
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
-        /*dateText.setText(format.format(new Date()));
-        if(transaction.getEndDate() != null) {
-            endDateText.setText(format.format(transaction.getEndDate()));
-        }*/
 
         //set icon according to transaction type
         setIcon(Transaction.Type.INDIVIDUALINCOME);
@@ -166,9 +150,6 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
                     getPresenter().deleteTransaction();
                     onItemClick.updateTransactionListData();
                     onItemClick.displayDeleted();
-                    /*Intent deleteTransaction = new Intent(getActivity(), MainActivity.class);
-                    deleteTransaction.setAction(Intent.ACTION_DEFAULT);
-                    getActivity().startActivity(deleteTransaction);*/
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -181,11 +162,7 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
         });
 
         addButton.setOnClickListener(v -> {
-            //Toast.makeText(getActivity(), "Transaction added.", Toast.LENGTH_LONG).show();
             onItemClick.displayTransaction(null);
-            /*Intent addActivity = new Intent(getActivity(), TransactionDetailActivity.class);
-            addActivity.setAction(Intent.ACTION_DEFAULT);
-            getActivity().startActivity(addActivity);*/
         });
 
 
@@ -247,6 +224,17 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
                     }
                 }
                 boolean overMonthLimit = getPresenter().overMonthLimit(
+                        new Lambda(new ILambda() {
+                            @Override
+                            public Object callback(Object o) {
+                                Double monthExpenses = TransactionAmount.getMonthlyAmount((ArrayList<Transaction>) o, date);
+                                monthExpenses -= finalThisAmount;
+                                monthExpenses += finalAmount;
+                                Log.d("month total", Double.toString(monthExpenses));
+                                transaction = (Transaction)o;
+                                return 0;
+                            }
+                        },
                         inputDate,
                         amountDouble,
                         title.getText().toString(),

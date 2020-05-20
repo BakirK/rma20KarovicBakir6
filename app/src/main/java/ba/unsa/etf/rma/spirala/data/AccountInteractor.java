@@ -11,17 +11,20 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import ba.unsa.etf.rma.spirala.R;
+import ba.unsa.etf.rma.spirala.util.Lambda;
 import ba.unsa.etf.rma.spirala.util.Util;
 
 public class AccountInteractor extends AsyncTask<String, Integer, Void> implements IAccountInteractor {
     private String api_id;
-    private OnAccountSearchDone caller;
+    //private OnAccountSearchDone caller;
     private Account account;
+    private Lambda lambda;
     private Context context;
 
-    public AccountInteractor(OnAccountSearchDone p, Context context) {
-        this.caller = p;
+    public AccountInteractor(Lambda lambda, Context context) {
+        //this.caller = p;
         this.context = context;
+        this.lambda = lambda;
         api_id = context.getString(R.string.api_id);
     }
 
@@ -54,7 +57,8 @@ public class AccountInteractor extends AsyncTask<String, Integer, Void> implemen
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        caller.onDone(account);
+        //caller.onDone(account);
+        lambda.pass(account);
     }
 
     public interface OnAccountSearchDone{

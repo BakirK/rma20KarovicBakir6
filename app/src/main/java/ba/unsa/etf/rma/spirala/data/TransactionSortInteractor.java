@@ -1,4 +1,4 @@
-package ba.unsa.etf.rma.spirala.list;
+package ba.unsa.etf.rma.spirala.data;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -18,31 +18,38 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.R;
-import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.util.Lambda;
 import ba.unsa.etf.rma.spirala.util.Util;
 
-public class TransactionListInteractor extends AsyncTask<String, Integer, Void> implements ITransactionListInteractor {
+public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> {
     private Context context;
     private Lambda lambda;
     ArrayList<Transaction> transactions;
 
-    public TransactionListInteractor(Lambda lambda, Context context) {
+    public TransactionSortInteractor(Lambda lambda, Context context) {
         this.lambda = lambda;
         this.context = context;
     }
 
     @Override
     protected Void doInBackground(String... strings) {
-        getAllPages();
+        getAllPages(strings);
         return null;
     }
 
-    private void getAllPages() {
+    private void getAllPages(String... strings) {
         int page = 0;
         outer: while(true) {
+
             String url1 = context.getString(R.string.root) + "/account/" +  context.getString(R.string.api_id)
-                    + "/transacions?page=" + page;
+                    + "/transacions/filter?page=" + page;
+            if(strings[0] != null) url1 += "&typeId=" + strings[0];
+            if(strings[1] != null) url1 += "&month=" + strings[1];
+            if(strings[2] != null) url1 += "&year=" + strings[2];
+            if(strings[3] != null && strings[4] != null) {
+                url1 += "&sort=" + strings[3];
+                url1 += "&.=" + strings[4];
+            }
             try {
                 URL url = new URL(url1);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();

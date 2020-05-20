@@ -11,6 +11,6 @@ public interface ITransactionListPresenter {
     void refreshTransactions(Transaction.Type t, String orderBy, Date d);
     void refreshAccount();
     void getBudget(Lambda l);
-    double getTotalLimit();
-    double getMonthLimit();
+    void getTotalLimit(Lambda l);
+    void getMonthLimit(Lambda l);
 }
