@@ -7,18 +7,17 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import ba.unsa.etf.rma.spirala.R;
-import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.Callback;
 import ba.unsa.etf.rma.spirala.util.Requests;
 
 public class TransactionPostInteractor extends AsyncTask<String, Integer, Void> {
     private Context context;
-    private Lambda lambda;
+    private Callback callback;
     Transaction transaction;
 
 
-    public TransactionPostInteractor(Lambda lambda, Context context) {
-        this.lambda = lambda;
+    public TransactionPostInteractor(Callback callback, Context context) {
+        this.callback = callback;
         this.context = context;
     }
 
@@ -53,6 +52,6 @@ public class TransactionPostInteractor extends AsyncTask<String, Integer, Void> 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        lambda.pass(transaction);
+        callback.pass(transaction);
     }
 }

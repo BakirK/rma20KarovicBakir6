@@ -4,8 +4,8 @@ import android.content.Context;
 import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
 import ba.unsa.etf.rma.spirala.data.AccountPostInteractor;
-import ba.unsa.etf.rma.spirala.util.ILambda;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.ICallback;
+import ba.unsa.etf.rma.spirala.util.Callback;
 
 public class BudgetPresenter implements IBudgetPresenter {
     private Context context;
@@ -20,7 +20,7 @@ public class BudgetPresenter implements IBudgetPresenter {
     @Override
     public void refreshAccount() {
         new AccountInteractor(
-                new Lambda(new ILambda() {
+                new Callback(new ICallback() {
                     @Override
                     public Object callback(Object o) {
                         account = (Account)o;
@@ -35,7 +35,7 @@ public class BudgetPresenter implements IBudgetPresenter {
     @Override
     public void updateLimits(double totalLimit, double monthlyLimit) {
         new AccountPostInteractor(
-                new Lambda(new ILambda() {
+                new Callback(new ICallback() {
                     @Override
                     public Object callback(Object o) {
                         account = (Account)o;
@@ -53,7 +53,7 @@ public class BudgetPresenter implements IBudgetPresenter {
     @Override
     public void setBudget(double budget) {
         new AccountPostInteractor(
-                new Lambda(new ILambda() {
+                new Callback(new ICallback() {
                     @Override
                     public Object callback(Object o) {
                         account = (Account)o;
@@ -72,7 +72,7 @@ public class BudgetPresenter implements IBudgetPresenter {
     @Override
     public void setTotalLimit(double totalLimit) {
             new AccountPostInteractor(
-                    new Lambda(new ILambda() {
+                    new Callback(new ICallback() {
                         @Override
                         public Object callback(Object o) {
                             account = (Account)o;
@@ -91,7 +91,7 @@ public class BudgetPresenter implements IBudgetPresenter {
     @Override
     public void setMonthLimit(double monthLimit) {
         new AccountPostInteractor(
-                new Lambda(new ILambda() {
+                new Callback(new ICallback() {
                     @Override
                     public Object callback(Object o) {
                         account = (Account)o;

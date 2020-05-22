@@ -24,8 +24,8 @@ import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.listeners.OnSwipeTouchListener;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
-import ba.unsa.etf.rma.spirala.util.ILambda;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.ICallback;
+import ba.unsa.etf.rma.spirala.util.Callback;
 
 public class TransactionListFragment extends Fragment implements ITransactionListView {
     private TransactionListAdapter adapter;
@@ -201,7 +201,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     public void updateTransactionListData() {
         getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
         getPresenter().getBudget(
-                new Lambda(new ILambda() {
+                new Callback(new ICallback() {
                     @Override
                     public Object callback(Object o) {
                         Double budget = (Double) o;

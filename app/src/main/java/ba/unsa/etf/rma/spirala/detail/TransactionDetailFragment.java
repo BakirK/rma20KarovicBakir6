@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,13 +28,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import ba.unsa.etf.rma.spirala.data.TransactionAmount;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.list.TransactionSpinnerAdapter;
-import ba.unsa.etf.rma.spirala.util.ILambda;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.ICallback;
+import ba.unsa.etf.rma.spirala.util.Callback;
 
 public class TransactionDetailFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
     private EditText amount;
@@ -235,12 +233,12 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
                     );
                 } else {
                     getPresenter().overMonthLimit(
-                            new Lambda(new ILambda() {
+                            new Callback(new ICallback() {
                                 @Override
                                 public Object callback(Object o) {
                                     boolean overMonthLimit = (Boolean)o;
                                     getPresenter().overGlobalLimit(
-                                            new Lambda(new ILambda() {
+                                            new Callback(new ICallback() {
                                                 @Override
                                                 public Object callback(Object o) {
                                                     boolean overGlobalLimit = (Boolean)o;

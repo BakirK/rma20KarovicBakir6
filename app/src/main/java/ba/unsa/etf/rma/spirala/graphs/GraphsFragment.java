@@ -20,11 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ba.unsa.etf.rma.spirala.R;
-import ba.unsa.etf.rma.spirala.budget.BudgetPresenter;
 import ba.unsa.etf.rma.spirala.listeners.OnSwipeTouchListener;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
-import ba.unsa.etf.rma.spirala.util.ILambda;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.ICallback;
+import ba.unsa.etf.rma.spirala.util.Callback;
 
 public class GraphsFragment extends Fragment implements IGraphView {
     private ConstraintLayout layout;
@@ -63,7 +62,7 @@ public class GraphsFragment extends Fragment implements IGraphView {
     }
 
     private void showEntries(String label) {
-        Lambda expenses = new Lambda(new ILambda() {
+        Callback expenses = new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 List<Entry> sumEntries = (ArrayList)o;
@@ -71,7 +70,7 @@ public class GraphsFragment extends Fragment implements IGraphView {
                 return 0;
             }
         });
-        Lambda income = new Lambda(new ILambda() {
+        Callback income = new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 List<Entry> sumEntries = (ArrayList)o;
@@ -79,7 +78,7 @@ public class GraphsFragment extends Fragment implements IGraphView {
                 return 0;
             }
         });
-        Lambda budget = new Lambda(new ILambda() {
+        Callback budget = new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 List<Entry> sumEntries = (ArrayList)o;

@@ -13,22 +13,20 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.Callback;
 import ba.unsa.etf.rma.spirala.util.Util;
 
 public class TransactionListInteractor extends AsyncTask<String, Integer, Void> implements ITransactionListInteractor {
     private Context context;
-    private Lambda lambda;
+    private Callback callback;
     ArrayList<Transaction> transactions;
 
-    public TransactionListInteractor(Lambda lambda, Context context) {
-        this.lambda = lambda;
+    public TransactionListInteractor(Callback callback, Context context) {
+        this.callback = callback;
         this.context = context;
         transactions = new ArrayList<>();
     }
@@ -70,6 +68,6 @@ public class TransactionListInteractor extends AsyncTask<String, Integer, Void> 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        (this.lambda).pass(transactions);
+        (this.callback).pass(transactions);
     }
 }

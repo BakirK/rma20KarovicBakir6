@@ -1,5 +1,5 @@
 package ba.unsa.etf.rma.spirala.util;
 
-public interface ILambda {
+public interface ICallback {
     Object callback(Object o);
 }

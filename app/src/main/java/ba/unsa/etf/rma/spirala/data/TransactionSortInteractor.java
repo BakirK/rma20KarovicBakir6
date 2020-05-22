@@ -2,7 +2,6 @@ package ba.unsa.etf.rma.spirala.data;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,16 +16,16 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.spirala.R;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.Callback;
 import ba.unsa.etf.rma.spirala.util.Util;
 
 public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> {
     private Context context;
-    private Lambda lambda;
+    private Callback callback;
     ArrayList<Transaction> transactions;
 
-    public TransactionSortInteractor(Lambda lambda, Context context) {
-        this.lambda = lambda;
+    public TransactionSortInteractor(Callback callback, Context context) {
+        this.callback = callback;
         this.context = context;
         transactions = new ArrayList<>();
     }
@@ -76,6 +75,6 @@ public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        (this.lambda).pass(transactions);
+        (this.callback).pass(transactions);
     }
 }

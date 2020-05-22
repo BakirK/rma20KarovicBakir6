@@ -3,22 +3,22 @@ package ba.unsa.etf.rma.spirala.graphs;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.spirala.data.Transaction;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.Callback;
 
 public interface IGraphPresenter {
-    void getDailyEntries(Lambda expenses, Lambda income, Lambda budget);
-    void getMonthlyEntries(Lambda expenses, Lambda income, Lambda budget);
-    void getWeeklyEntries(Lambda expenses, Lambda income, Lambda budget);
+    void getDailyEntries(Callback expenses, Callback income, Callback budget);
+    void getMonthlyEntries(Callback expenses, Callback income, Callback budget);
+    void getWeeklyEntries(Callback expenses, Callback income, Callback budget);
 
-    void getDailyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda);
-    void getMonthlyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda);
-    void getWeeklyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda);
+    void getDailyExpensesEntries(ArrayList<Transaction> transactions, Callback callback);
+    void getMonthlyExpensesEntries(ArrayList<Transaction> transactions, Callback callback);
+    void getWeeklyExpensesEntries(ArrayList<Transaction> transactions, Callback callback);
 
-    void getDailyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda);
-    void getMonthlyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda);
-    void getWeeklyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda);
+    void getDailyIncomeEntries(ArrayList<Transaction> transactions, Callback callback);
+    void getMonthlyIncomeEntries(ArrayList<Transaction> transactions, Callback callback);
+    void getWeeklyIncomeEntries(ArrayList<Transaction> transactions, Callback callback);
 
-    void getDailyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda);
-    void getMonthlyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda);
-    void getWeeklyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda);
+    void getDailyBudgetEntries(ArrayList<Transaction> transactions, Callback callback);
+    void getMonthlyBudgetEntries(ArrayList<Transaction> transactions, Callback callback);
+    void getWeeklyBudgetEntries(ArrayList<Transaction> transactions, Callback callback);
 }

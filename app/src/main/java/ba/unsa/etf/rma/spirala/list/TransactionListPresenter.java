@@ -5,18 +5,15 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
 
 import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
-import ba.unsa.etf.rma.spirala.data.IAccountInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.data.TransactionAmount;
 import ba.unsa.etf.rma.spirala.data.TransactionSortInteractor;
-import ba.unsa.etf.rma.spirala.util.ILambda;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.ICallback;
+import ba.unsa.etf.rma.spirala.util.Callback;
 
 public class TransactionListPresenter implements ITransactionListPresenter {
     private ITransactionListView view;
@@ -25,7 +22,7 @@ public class TransactionListPresenter implements ITransactionListPresenter {
     ArrayList<Transaction> transactions = null;
 
     public TransactionListPresenter(ITransactionListView view, Context context) {
-        new TransactionListInteractor(new Lambda(new ILambda() {
+        new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 transactions = (ArrayList<Transaction>) o;
@@ -69,7 +66,7 @@ public class TransactionListPresenter implements ITransactionListPresenter {
 
         if(t != null) {
             String typeId = Integer.toString(Transaction.getTypeId(t));
-            new TransactionSortInteractor(new Lambda(new ILambda() {
+            new TransactionSortInteractor(new Callback(new ICallback() {
                 @Override
                 public Object callback(Object o) {
                     transactions = (ArrayList<Transaction>) o;
@@ -82,7 +79,7 @@ public class TransactionListPresenter implements ITransactionListPresenter {
                 }
             }), context).execute(typeId, month, year, el, order);
         } else {
-            new TransactionSortInteractor(new Lambda(new ILambda() {
+            new TransactionSortInteractor(new Callback(new ICallback() {
                 @Override
                 public Object callback(Object o) {
                     transactions = (ArrayList<Transaction>) o;
@@ -101,7 +98,7 @@ public class TransactionListPresenter implements ITransactionListPresenter {
 
     @Override
     public void refreshAccount() {
-        new AccountInteractor(new Lambda(new ILambda() {
+        new AccountInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 account = (Account)o;
@@ -112,11 +109,11 @@ public class TransactionListPresenter implements ITransactionListPresenter {
     }
 
     @Override
-    public void getBudget(Lambda l) {
+    public void getBudget(Callback l) {
         if(account == null) {
             Log.e("acc null trLiPr gbu", "null");
         }
-        new TransactionListInteractor(new Lambda(new ILambda() {
+        new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 return l.pass(account.getBudget() - TransactionAmount.getTotalAmount((ArrayList<Transaction>) o));
@@ -125,11 +122,11 @@ public class TransactionListPresenter implements ITransactionListPresenter {
     }
 
     @Override
-    public void getTotalLimit(Lambda l) {
+    public void getTotalLimit(Callback l) {
         if(account != null) {
             l.pass(account.getTotalLimit());
         }
-        new AccountInteractor(new Lambda(new ILambda() {
+        new AccountInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 return l.pass(((Account)o).getTotalLimit());
@@ -138,11 +135,11 @@ public class TransactionListPresenter implements ITransactionListPresenter {
     }
 
     @Override
-    public void getMonthLimit(Lambda l) {
+    public void getMonthLimit(Callback l) {
         if(account != null) {
             l.pass(account.getMonthLimit());
         }
-        new AccountInteractor(new Lambda(new ILambda() {
+        new AccountInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 return l.pass(((Account)o).getMonthLimit());

@@ -1,7 +1,6 @@
 package ba.unsa.etf.rma.spirala.graphs;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.github.mikephil.charting.data.Entry;
 
@@ -13,8 +12,8 @@ import java.util.Vector;
 
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
-import ba.unsa.etf.rma.spirala.util.ILambda;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.ICallback;
+import ba.unsa.etf.rma.spirala.util.Callback;
 
 public class GraphPresenter implements IGraphPresenter {
     private Context context;
@@ -26,7 +25,7 @@ public class GraphPresenter implements IGraphPresenter {
     }
 
     @Override
-    public void getDailyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda) {
+    public void getDailyExpensesEntries(ArrayList<Transaction> transactions, Callback callback) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(24);
@@ -65,11 +64,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        lambda.pass(sumEntries);
+        callback.pass(sumEntries);
     }
 
-    public void getDailyEntries(Lambda expenses, Lambda income, Lambda budget) {
-        new TransactionListInteractor(new Lambda(new ILambda() {
+    public void getDailyEntries(Callback expenses, Callback income, Callback budget) {
+        new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
@@ -82,8 +81,8 @@ public class GraphPresenter implements IGraphPresenter {
     }
 
     @Override
-    public void getMonthlyEntries(Lambda expenses, Lambda income, Lambda budget) {
-        new TransactionListInteractor(new Lambda(new ILambda() {
+    public void getMonthlyEntries(Callback expenses, Callback income, Callback budget) {
+        new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
@@ -96,8 +95,8 @@ public class GraphPresenter implements IGraphPresenter {
     }
 
     @Override
-    public void getWeeklyEntries(Lambda expenses, Lambda income, Lambda budget) {
-        new TransactionListInteractor(new Lambda(new ILambda() {
+    public void getWeeklyEntries(Callback expenses, Callback income, Callback budget) {
+        new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
@@ -110,7 +109,7 @@ public class GraphPresenter implements IGraphPresenter {
     }
 
     @Override
-    public void getMonthlyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda) {
+    public void getMonthlyExpensesEntries(ArrayList<Transaction> transactions, Callback callback) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
 
@@ -172,11 +171,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        lambda.pass(sumEntries);
+        callback.pass(sumEntries);
     }
 
     @Override
-    public void getWeeklyExpensesEntries(ArrayList<Transaction> transactions, Lambda lambda) {
+    public void getWeeklyExpensesEntries(ArrayList<Transaction> transactions, Callback callback) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(7);
@@ -253,11 +252,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        lambda.pass(sumEntries);
+        callback.pass(sumEntries);
     }
 
     @Override
-    public void getDailyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda) {
+    public void getDailyIncomeEntries(ArrayList<Transaction> transactions, Callback callback) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(24);
@@ -297,11 +296,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        lambda.pass(sumEntries);
+        callback.pass(sumEntries);
     }
 
     @Override
-    public void getMonthlyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda) {
+    public void getMonthlyIncomeEntries(ArrayList<Transaction> transactions, Callback callback) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
 
@@ -363,11 +362,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        lambda.pass(sumEntries);
+        callback.pass(sumEntries);
     }
 
     @Override
-    public void getWeeklyIncomeEntries(ArrayList<Transaction> transactions, Lambda lambda) {
+    public void getWeeklyIncomeEntries(ArrayList<Transaction> transactions, Callback callback) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(7);
@@ -444,11 +443,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        lambda.pass(sumEntries);
+        callback.pass(sumEntries);
     }
 
     @Override
-    public void getDailyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda) {
+    public void getDailyBudgetEntries(ArrayList<Transaction> transactions, Callback callback) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(24);
@@ -504,11 +503,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        lambda.pass(sumEntries);
+        callback.pass(sumEntries);
     }
 
     @Override
-    public void getMonthlyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda) {
+    public void getMonthlyBudgetEntries(ArrayList<Transaction> transactions, Callback callback) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
 
@@ -586,11 +585,11 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        lambda.pass(sumEntries);
+        callback.pass(sumEntries);
     }
 
     @Override
-    public void getWeeklyBudgetEntries(ArrayList<Transaction> transactions, Lambda lambda) {
+    public void getWeeklyBudgetEntries(ArrayList<Transaction> transactions, Callback callback) {
         Date today = new Date();
         Vector<Float> entries = new Vector<>();
         entries.setSize(7);
@@ -692,6 +691,6 @@ public class GraphPresenter implements IGraphPresenter {
             }
             i++;
         }
-        lambda.pass(sumEntries);
+        callback.pass(sumEntries);
     }
 }

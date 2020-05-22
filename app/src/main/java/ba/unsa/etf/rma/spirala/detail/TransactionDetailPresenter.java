@@ -21,8 +21,8 @@ import ba.unsa.etf.rma.spirala.data.TransactionPostInteractor;
 import ba.unsa.etf.rma.spirala.data.TransactionSortInteractor;
 import ba.unsa.etf.rma.spirala.data.TransactionUpdateInteractor;
 import ba.unsa.etf.rma.spirala.list.TransactionListInteractor;
-import ba.unsa.etf.rma.spirala.util.ILambda;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.ICallback;
+import ba.unsa.etf.rma.spirala.util.Callback;
 
 public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     private Context context;
@@ -30,7 +30,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     private Account account;
 
     public TransactionDetailPresenter(Context context) {
-        new AccountInteractor(new Lambda(new ILambda() {
+        new AccountInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 account = (Account) o;
@@ -43,7 +43,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     @Override
     public void deleteTransaction() {
         int id = transaction.getId();
-        new TransactionDeleteInteractor(new Lambda(new ILambda() {
+        new TransactionDeleteInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 JSONObject jo = (JSONObject) o;
@@ -76,7 +76,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
         String typeId = Integer.toString(Transaction.getTypeId(transaction.getType()));
         String transactionId = Integer.toString(transaction.getId());
 
-        new TransactionUpdateInteractor(new Lambda(new ILambda() {
+        new TransactionUpdateInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 transaction = (Transaction)o;
@@ -96,7 +96,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     }
 
     @Override
-    public void overMonthLimit(Lambda lambda, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
+    public void overMonthLimit(Callback callback, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
         Double thisAmount = 0.;
         if(this.transaction != null) {
             if(Transaction.isIncome(this.transaction.getType())) {
@@ -129,7 +129,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
 
         Double finalThisAmount = thisAmount;
         Double finalAmount = amount;
-        new TransactionSortInteractor(new Lambda(new ILambda() {
+        new TransactionSortInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 Double monthExpenses = TransactionAmount.getMonthlyAmount((ArrayList<Transaction>) o, date);
@@ -137,7 +137,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
                 monthExpenses += finalAmount;
                 Log.d("month total", Double.toString(monthExpenses));
                 boolean over = account.getMonthLimit() < monthExpenses;
-                lambda.pass(over);
+                callback.pass(over);
                 return 0;
             }
         }), context).execute(null, month, year, null, null);
@@ -145,7 +145,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
 
 
     @Override
-    public void overGlobalLimit(Lambda lambda, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
+    public void overGlobalLimit(Callback callback, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
         Double thisAmount = 0.;
         if(this.transaction != null) {
             if(Transaction.isIncome(this.transaction.getType())) {
@@ -168,14 +168,14 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
 
         Double finalThisAmount = thisAmount;
         Double finalAmount = amount;
-        new TransactionListInteractor(new Lambda(new ILambda() {
+        new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
                 Double totalExpenses = TransactionAmount.getTotalAmount((ArrayList<Transaction>) o);
                 totalExpenses -= finalThisAmount;
                 totalExpenses += finalAmount;
                 boolean over = totalExpenses > account.getTotalLimit();
-                lambda.pass(over);
+                callback.pass(over);
                 return 0;
             }
         }), context).execute();
@@ -198,7 +198,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
                 intervalStr = transactionInterval.toString();
             }
             String typeIdStr = Integer.toString(Transaction.getTypeId(type));
-            new TransactionPostInteractor(new Lambda(new ILambda() {
+            new TransactionPostInteractor(new Callback(new ICallback() {
                 @Override
                 public Object callback(Object o) {
                     transaction = (Transaction)o;

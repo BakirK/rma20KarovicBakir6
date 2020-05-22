@@ -7,18 +7,18 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import ba.unsa.etf.rma.spirala.R;
-import ba.unsa.etf.rma.spirala.util.Lambda;
+import ba.unsa.etf.rma.spirala.util.Callback;
 import ba.unsa.etf.rma.spirala.util.Requests;
 
 public class AccountPostInteractor extends AsyncTask<String, Integer, Void> {
     private String api_id;
     private Account account;
-    private Lambda lambda;
+    private Callback callback;
     private Context context;
 
-    public AccountPostInteractor(Lambda lambda, Context context) {
+    public AccountPostInteractor(Callback callback, Context context) {
         this.context = context;
-        this.lambda = lambda;
+        this.callback = callback;
         //caller = p;
         api_id = context.getString(R.string.api_id);
     }
@@ -53,6 +53,6 @@ public class AccountPostInteractor extends AsyncTask<String, Integer, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        lambda.pass(account);
+        callback.pass(account);
     }
 }
