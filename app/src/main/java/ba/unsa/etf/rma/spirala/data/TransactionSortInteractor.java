@@ -62,12 +62,9 @@ public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> 
                 for (int i = 0; i < results.length(); i++) {
                     transactions.add(new Transaction(results.getJSONObject(i)));
                 }
-            } catch (MalformedURLException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+                break outer;
             }
         }
     }

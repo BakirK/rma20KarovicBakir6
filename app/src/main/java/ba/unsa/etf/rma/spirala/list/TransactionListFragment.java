@@ -96,6 +96,12 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         }
         previousSelectedItemIndex = -1;
         layout = (ConstraintLayout) fragmentView.findViewById(R.id.layout);
+
+        if(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
+            offlineText.setVisibility(View.INVISIBLE);
+        } else {
+            offlineText.setVisibility(View.VISIBLE);
+        }
     }
 
     private void initListeners() {

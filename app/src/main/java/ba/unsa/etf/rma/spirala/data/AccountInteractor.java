@@ -16,13 +16,11 @@ import ba.unsa.etf.rma.spirala.util.Util;
 
 public class AccountInteractor extends AsyncTask<String, Integer, Void> implements IAccountInteractor {
     private String api_id;
-    //private OnAccountSearchDone caller;
     private Account account;
     private Callback callback;
     private Context context;
 
     public AccountInteractor(Callback callback, Context context) {
-        //this.caller = p;
         this.context = context;
         this.callback = callback;
         api_id = context.getString(R.string.api_id);
@@ -56,11 +54,6 @@ public class AccountInteractor extends AsyncTask<String, Integer, Void> implemen
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        //caller.onDone(account);
         callback.pass(account);
-    }
-
-    public interface OnAccountSearchDone{
-        public void onDone(Account result);
     }
 }

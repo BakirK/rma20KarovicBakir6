@@ -12,6 +12,9 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 public class TransactionContentProvider extends ContentProvider {
     private static final int ALLROWS =1;
     private static final int ONEROW = 2;
@@ -82,25 +85,57 @@ public class TransactionContentProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
+        String idRow;
+        switch (uM.match(uri)){
+            case ONEROW:
+                idRow = uri.getPathSegments().get(1);
+                break;
+            default: {
+                throw new IllegalArgumentException("InternalId missing in: "+uri.toString());
+            }
+        }
         SQLiteDatabase database;
         try{
             database=mHelper.getWritableDatabase();
         }catch (SQLiteException e){
             database=mHelper.getReadableDatabase();
         }
-        int deletedRows = database.delete(TransactionDBOpenHelper.TRANSACTION_TABLE, selection, selectionArgs);
+        if (selection == null) selection = "";
+        selection += TransactionDBOpenHelper.TRANSACTION_INTERNAL_ID + "=?";
+        ArrayList<String> args = new ArrayList<>();
+        if(selectionArgs != null) {
+            Collections.addAll(args, selectionArgs);
+        }
+        args.add(idRow);
+        int deletedRows = database.delete(TransactionDBOpenHelper.TRANSACTION_TABLE, selection, args.toArray(new String[args.size()]));
         return deletedRows;
     }
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+        String idRow;
+        switch (uM.match(uri)){
+            case ONEROW:
+                idRow = uri.getPathSegments().get(1);
+                break;
+            default: {
+                throw new IllegalArgumentException("InternalId missing in: "+uri.toString());
+            }
+        }
         SQLiteDatabase database;
         try{
             database=mHelper.getWritableDatabase();
         }catch (SQLiteException e){
             database=mHelper.getReadableDatabase();
         }
-        int updatedRows = database.update(TransactionDBOpenHelper.TRANSACTION_TABLE, values, selection, selectionArgs );
+        if (selection == null) selection = "";
+        selection += TransactionDBOpenHelper.TRANSACTION_INTERNAL_ID + "=?";
+        ArrayList<String> args = new ArrayList<>();
+        if(selectionArgs != null) {
+            Collections.addAll(args, selectionArgs);
+        }
+        args.add(idRow);
+        int updatedRows = database.update(TransactionDBOpenHelper.TRANSACTION_TABLE, values, selection, args.toArray(new String[args.size()]) );
         return updatedRows;
     }
 }

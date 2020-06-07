@@ -14,8 +14,10 @@ import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
+import ba.unsa.etf.rma.spirala.data.ITransactionDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.data.TransactionAmount;
+import ba.unsa.etf.rma.spirala.data.TransactionDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.data.TransactionDeleteInteractor;
 import ba.unsa.etf.rma.spirala.data.TransactionPostInteractor;
 import ba.unsa.etf.rma.spirala.data.TransactionSortInteractor;
@@ -41,48 +43,28 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     }
 
     @Override
-    public void deleteTransaction() {
-        int id = transaction.getId();
-        new TransactionDeleteInteractor(new Callback(new ICallback() {
-            @Override
-            public Object callback(Object o) {
-                JSONObject jo = (JSONObject) o;
-                try {
-                    if(jo.getString("error") != null) {
-                        Log.d("d", "tr not found");
+    public void deleteTransaction(boolean network) {
+        if(network) {
+            int id = transaction.getId();
+            new TransactionDeleteInteractor(new Callback(new ICallback() {
+                @Override
+                public Object callback(Object o) {
+                    JSONObject jo = (JSONObject) o;
+                    try {
+                        if(jo.getString("error") != null) {
+                            Log.d("d", "tr not found");
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    return 0;
                 }
-                return 0;
-            }
-        }), context).execute(Integer.toString(id));
-    }
-
-    private void updateTransaction() {
-        String date = Transaction.format.format(transaction.getDate());
-        String title = transaction.getTitle();
-        String amount = transaction.getAmount().toString();
-        String endDate = null;
-        if(transaction.getEndDate() != null) {
-            endDate = Transaction.format.format(transaction.getEndDate());
+            }), context).execute(Integer.toString(id));
+        } else {
+            TransactionDatabaseInteractor transactionDatabaseInteractor = new TransactionDatabaseInteractor();
+            transactionDatabaseInteractor.deleteTransaction(context, transaction.getInternalId());
         }
 
-        String itemDescription = transaction.getItemDescription();
-        String interval = null;
-        if(transaction.getTransactionInterval() != null) {
-            interval = transaction.getTransactionInterval().toString();
-        }
-        String typeId = Integer.toString(Transaction.getTypeId(transaction.getType()));
-        String transactionId = Integer.toString(transaction.getId());
-
-        new TransactionUpdateInteractor(new Callback(new ICallback() {
-            @Override
-            public Object callback(Object o) {
-                transaction = (Transaction)o;
-                return 0;
-            }
-        }), context).execute(date, title, amount, endDate, itemDescription, interval, typeId, transactionId);
     }
 
     @Override
@@ -183,28 +165,35 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
 
     @Override
     public void updateParameters(Date date, Double amount, String title, Transaction.Type type, @Nullable String itemDescription,
-                                 @Nullable Integer transactionInterval, @Nullable Date endDate) {
+                                 @Nullable Integer transactionInterval, @Nullable Date endDate, boolean network) {
         if(this.transaction == null) {
-            String dateStr = Transaction.format.format(date);
-            String titleStr = title;
-            String amountStr = amount.toString();
-            String endDateStr = null;
-            if(endDate != null) {
-                endDateStr = Transaction.format.format(endDate);
-            }
-            String itemDescriptionStr = itemDescription;
-            String intervalStr = null;
-            if(transactionInterval != null) {
-                intervalStr = transactionInterval.toString();
-            }
-            String typeIdStr = Integer.toString(Transaction.getTypeId(type));
-            new TransactionPostInteractor(new Callback(new ICallback() {
-                @Override
-                public Object callback(Object o) {
-                    transaction = (Transaction)o;
-                    return 0;
+            if(network) {
+                String dateStr = Transaction.format.format(date);
+                String titleStr = title;
+                String amountStr = amount.toString();
+                String endDateStr = null;
+                if(endDate != null) {
+                    endDateStr = Transaction.format.format(endDate);
                 }
-            }), context).execute(dateStr, titleStr, amountStr, endDateStr, itemDescriptionStr, intervalStr, typeIdStr);
+                String itemDescriptionStr = itemDescription;
+                String intervalStr = null;
+                if(transactionInterval != null) {
+                    intervalStr = transactionInterval.toString();
+                }
+                String typeIdStr = Integer.toString(Transaction.getTypeId(type));
+                new TransactionPostInteractor(new Callback(new ICallback() {
+                    @Override
+                    public Object callback(Object o) {
+                        transaction = (Transaction)o;
+                        return 0;
+                    }
+                }), context).execute(dateStr, titleStr, amountStr, endDateStr, itemDescriptionStr, intervalStr, typeIdStr);
+            } else {
+                transaction = new Transaction(-1, date, amount, title, type, itemDescription, transactionInterval, endDate);
+                TransactionDatabaseInteractor transactionDatabaseInteractor = new TransactionDatabaseInteractor();
+                transactionDatabaseInteractor.addTransaction(context, transaction);
+            }
+
         } else {
             transaction.setTitle(title);
             transaction.setAmount(amount);
@@ -223,9 +212,40 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
                 transaction.setTransactionInterval(null);
                 transaction.setEndDate(null);
             }
-            updateTransaction();
+
+            if(network) {
+                updateTransaction();
+            } else {
+                TransactionDatabaseInteractor transactionDatabaseInteractor = new TransactionDatabaseInteractor();
+                transactionDatabaseInteractor.updateTransaction(context, transaction);
+            }
+        }
+    }
+
+    private void updateTransaction() {
+        String date = Transaction.format.format(transaction.getDate());
+        String title = transaction.getTitle();
+        String amount = transaction.getAmount().toString();
+        String endDate = null;
+        if(transaction.getEndDate() != null) {
+            endDate = Transaction.format.format(transaction.getEndDate());
         }
 
+        String itemDescription = transaction.getItemDescription();
+        String interval = null;
+        if(transaction.getTransactionInterval() != null) {
+            interval = transaction.getTransactionInterval().toString();
+        }
+        String typeId = Integer.toString(Transaction.getTypeId(transaction.getType()));
+        String transactionId = Integer.toString(transaction.getId());
+
+        new TransactionUpdateInteractor(new Callback(new ICallback() {
+            @Override
+            public Object callback(Object o) {
+                transaction = (Transaction)o;
+                return 0;
+            }
+        }), context).execute(date, title, amount, endDate, itemDescription, interval, typeId, transactionId);
     }
 
 }

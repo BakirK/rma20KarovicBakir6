@@ -1,33 +1,25 @@
 package ba.unsa.etf.rma.spirala.list;
 
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.transition.Transition;
-import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
+import ba.unsa.etf.rma.spirala.data.TransactionDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.util.Callback;
 import ba.unsa.etf.rma.spirala.util.TransactionDBOpenHelper;
 import ba.unsa.etf.rma.spirala.util.Util;
@@ -73,7 +65,7 @@ public class TransactionListInteractor extends AsyncTask<String, Integer, Void> 
                 for (int i = 0; i < results.length(); i++) {
                     Transaction t = new Transaction(results.getJSONObject(i));
                     transactions.add(t);
-                    //insertTransaction(t);
+                    insertTransaction(t);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -146,32 +138,7 @@ public class TransactionListInteractor extends AsyncTask<String, Integer, Void> 
 
     @Override
     public void insertTransaction(Transaction transaction) {
-        ContentResolver cr = context.getApplicationContext().getContentResolver();
-        Uri address = Uri.parse("content://rma.provider.transactions/elements");
-        ContentValues values = new ContentValues();
-        values.put(TransactionDBOpenHelper.TRANSACTION_ID, transaction.getId());
-        values.put(TransactionDBOpenHelper.TRANSACTION_AMOUNT, transaction.getAmount());
-        values.put(TransactionDBOpenHelper.TRANSACTION_DATE, Transaction.format.format(transaction.getDate()));
-        values.put(TransactionDBOpenHelper.TRANSACTION_TYPE, transaction.getType().toString());
-        values.put(TransactionDBOpenHelper.TRANSACTION_TITLE, transaction.getTitle());
-
-        Integer transactionInterval = null;
-        if(transaction.getTransactionInterval() != null) {
-            transactionInterval = transaction.getTransactionInterval();
-        }
-        values.put(TransactionDBOpenHelper.TRANSACTION_TRANSACTIONINTERVAL, transactionInterval);
-
-        String endDate = null;
-        if(transaction.getEndDate() != null) {
-            endDate = Transaction.format.format(transaction.getEndDate());
-        }
-
-        values.put(TransactionDBOpenHelper.TRANSACTION_ENDDATE, endDate);
-        String itemDescription = null;
-        if(transaction.getItemDescription() != null) {
-            itemDescription = transaction.getItemDescription();
-        }
-        values.put(TransactionDBOpenHelper.TRANSACTION_ITEMDESCRIPTION, itemDescription);
-        cr.insert(address, values);
+        TransactionDatabaseInteractor transactionDatabaseInteractor = new TransactionDatabaseInteractor();
+        transactionDatabaseInteractor.addTransaction(context, transaction);
     }
 }

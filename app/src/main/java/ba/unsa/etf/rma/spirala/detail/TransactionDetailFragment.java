@@ -21,6 +21,9 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.treebo.internetavailabilitychecker.InternetAvailabilityChecker;
+import com.treebo.internetavailabilitychecker.InternetConnectivityListener;
+
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import ba.unsa.etf.rma.spirala.data.TransactionDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
@@ -35,7 +39,7 @@ import ba.unsa.etf.rma.spirala.list.TransactionSpinnerAdapter;
 import ba.unsa.etf.rma.spirala.util.ICallback;
 import ba.unsa.etf.rma.spirala.util.Callback;
 
-public class TransactionDetailFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
+public class TransactionDetailFragment extends Fragment implements DatePickerDialog.OnDateSetListener, InternetConnectivityListener {
     private EditText amount;
     private EditText title;
     private EditText itemDescription;
@@ -44,7 +48,7 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
     //private TextView dateTextLabel;
     private TextView endDateText;
     private TextView endDateTextLabel;
-    private TextView transactionIntervalLabel, itemDescriptionLabel;
+    private TextView transactionIntervalLabel, itemDescriptionLabel, offlineText;
     private Button saveBtn;
     private Button deleteBtn;
     private Button addButton;
@@ -56,16 +60,32 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
     boolean preventFirstFire;
     private ITransactionDetailPresenter presenter;
     private OnItemClick onItemClick;
+    private InternetAvailabilityChecker mInternetAvailabilityChecker;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_transaction_detail, container, false);
         preventFirstFire = true;
         initFields(view);
-        getPresenter();
+        InternetAvailabilityChecker.init(getActivity());
+        mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
+        mInternetAvailabilityChecker.addInternetConnectivityListener(this);
+        if(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
+            offlineText.setVisibility(View.INVISIBLE);
+        } else {
+            offlineText.setVisibility(View.VISIBLE);
+        }
         if (getArguments() != null && getArguments().containsKey("transaction")) {
             getPresenter().setTransaction(getArguments().getParcelable("transaction"));
             Transaction t = getPresenter().getTransaction();
+            inputDate = t.getDate();
+            if(t.getEndDate() != null) inputEndDate = t.getEndDate();
+            fillSpinner(t.getType());
+            refreshFields(t);
+        } else if(getArguments() != null && getArguments().containsKey("internalId")) {
+            int internalId = getArguments().getInt("internalId");
+            Transaction t = ITransactionDetailPresenter.getDatabaseTransaction(getActivity(), internalId);
+            getPresenter().setTransaction(t);
             inputDate = t.getDate();
             if(t.getEndDate() != null) inputEndDate = t.getEndDate();
             fillSpinner(t.getType());
@@ -145,7 +165,7 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
             builder.setMessage("Are you sure about that?").setTitle("Confirm deletion");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    getPresenter().deleteTransaction();
+                    getPresenter().deleteTransaction(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus());
                     onItemClick.updateTransactionListData();
                     onItemClick.displayDeleted();
                 }
@@ -380,13 +400,14 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
     private void updateTransaction(Date date, Double amountDouble, String title, Transaction.Type type, @Nullable String itemDescription,
                                    @Nullable Integer transactionInterval, @Nullable Date endDate) {
         getPresenter().updateParameters(
-                inputDate,
+                date,
                 amountDouble,
                 title,
                 type,
                 itemDescription,
                 transactionInterval,
-                endDate
+                endDate,
+                mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()
         );
         onItemClick.updateTransactionListData();
         if(getArguments() != null && getArguments().containsKey("transaction")) {
@@ -433,12 +454,11 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
         itemDescription = (EditText) view.findViewById(R.id.monthlyLimitText);
         transactionInterval = (EditText) view.findViewById(R.id.globalLimitText);
         dateText = (TextView) view.findViewById(R.id.dateText);
-        //dateTextLabel = (TextView) view.findViewById(R.id.dateTextLabel);
         endDateText = (TextView) view.findViewById(R.id.endDateText);
         endDateTextLabel = (TextView) view.findViewById(R.id.endDateTextLabel);
         transactionIntervalLabel = (TextView) view.findViewById(R.id.globalLimitLabel);
         itemDescriptionLabel = (TextView) view.findViewById(R.id.monthlyLimitLabel);
-
+        offlineText = (TextView) view.findViewById(R.id.offlineText);
         saveBtn = (Button) view.findViewById(R.id.saveBtn);
         deleteBtn = (Button) view.findViewById(R.id.deleteBtn);
         addButton = (Button) view.findViewById(R.id.addButton);
@@ -533,5 +553,15 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
             presenter = new TransactionDetailPresenter(getActivity());
         }
         return presenter;
+    }
+
+    @Override
+    public void onInternetConnectivityChanged(boolean isConnected) {
+        if (isConnected) {
+            offlineText.setVisibility(View.INVISIBLE);
+        }
+        else {
+            offlineText.setVisibility(View.VISIBLE);
+        }
     }
 }

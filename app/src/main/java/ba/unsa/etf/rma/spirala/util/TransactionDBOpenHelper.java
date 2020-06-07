@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class TransactionDBOpenHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "RMADataBase.db";
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
 
     public TransactionDBOpenHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
@@ -30,7 +30,7 @@ public class TransactionDBOpenHelper extends SQLiteOpenHelper {
     private static final String TRANSACTION_TABLE_CREATE =
             "CREATE TABLE IF NOT EXISTS " + TRANSACTION_TABLE +
                     " ("  + TRANSACTION_INTERNAL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                    + TRANSACTION_ID + " INTEGER UNIQUE NOT NULL, "
+                    + TRANSACTION_ID + " INTEGER UNIQUE, "
                     + TRANSACTION_DATE + " TEXT NOT NULL, "
                     + TRANSACTION_AMOUNT + " REAL NOT NULL, "
                     + TRANSACTION_ITEMDESCRIPTION + " TEXT, "
