@@ -120,7 +120,6 @@ public class Transaction implements Parcelable {
         REGULARINCOME,
         ALL
     }
-    private static int sequence = 1;
 
     private int id;
     private Date date;
@@ -130,6 +129,7 @@ public class Transaction implements Parcelable {
     private Integer transactionInterval; //only for regularincome and regularpayment
     private Date endDate; //for regular transactions
     private Type type;
+    private Integer internalId;
     public static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
 
@@ -157,6 +157,31 @@ public class Transaction implements Parcelable {
         }
     }
 
+    public Transaction(int id, Date date, Double amount, String title, Type type, @Nullable String itemDescription,
+                       @Nullable Integer transactionInterval, @Nullable Date endDate, int internalId) {
+        this.id = id;
+        this.date = date;
+        this.amount = amount;
+        this.title = title;
+        this.type = type;
+
+        //description is null for incoming transactions
+        if(type == Type.REGULARINCOME || type == Type.INDIVIDUALINCOME) {
+            this.itemDescription = null;
+        } else {
+            this.itemDescription = itemDescription;
+        }
+
+        if(type == Type.REGULARINCOME || type == Type.REGULARPAYMENT) {
+            this.transactionInterval = transactionInterval;
+            this.endDate = endDate;
+        } else {
+            this.transactionInterval = null;
+            this.endDate = null;
+        }
+        this.internalId = internalId;
+    }
+
     public Transaction(JSONObject transaction) throws JSONException {
         this.id = transaction.getInt("id");
         Date date = null;
@@ -178,7 +203,6 @@ public class Transaction implements Parcelable {
         this.type = Transaction.getTypeById(transaction.getInt("TransactionTypeId"));
         this.itemDescription = transaction.getString("itemDescription");
         if(this.itemDescription.equals("null")) this.itemDescription = "";
-        Log.d("jsono", transaction.toString());
         Object interval = transaction.get("transactionInterval");
         if(interval != null && !interval.toString().equals("null")) {
             this.transactionInterval = Integer.parseInt(interval.toString());
@@ -277,6 +301,14 @@ public class Transaction implements Parcelable {
 
     public void setType(Type type) {
         this.type = type;
+    }
+
+    public Integer getInternalId() {
+        return internalId;
+    }
+
+    public void setInternalId(Integer internalId) {
+        this.internalId = internalId;
     }
 
     public static boolean isIncome(Transaction.Type type) {

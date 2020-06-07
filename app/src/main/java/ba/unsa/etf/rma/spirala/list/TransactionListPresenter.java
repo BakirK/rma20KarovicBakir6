@@ -70,9 +70,6 @@ public class TransactionListPresenter implements ITransactionListPresenter {
                 @Override
                 public Object callback(Object o) {
                     transactions = (ArrayList<Transaction>) o;
-                    if(transactions.size() > 0) {
-                        Log.d("a", "a");
-                    }
                     view.setTransactions(transactions);
                     view.notifyTransactionListDataSetChanged();
                     return 0;
@@ -83,9 +80,6 @@ public class TransactionListPresenter implements ITransactionListPresenter {
                 @Override
                 public Object callback(Object o) {
                     transactions = (ArrayList<Transaction>) o;
-                    if(transactions.size() > 0) {
-                        Log.d("a", "a");
-                    }
                     view.setTransactions(transactions);
                     view.notifyTransactionListDataSetChanged();
                     return 0;
@@ -94,6 +88,12 @@ public class TransactionListPresenter implements ITransactionListPresenter {
         }
 
 
+    }
+
+//TODO
+    @Override
+    public void refreshCursorTransactions(Transaction.Type t, String orderBy, Date d) {
+        view.setCursor(new TransactionListInteractor().getTransactionCursor(context, t, orderBy, d));
     }
 
     @Override

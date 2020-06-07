@@ -9,6 +9,7 @@ import ba.unsa.etf.rma.spirala.util.Callback;
 public interface ITransactionListPresenter {
     Account getAccount();
     void refreshTransactions(Transaction.Type t, String orderBy, Date d);
+    void refreshCursorTransactions(Transaction.Type t, String orderBy, Date d);
     void refreshAccount();
     void getBudget(Callback l);
     void getTotalLimit(Callback l);

@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.treebo.internetavailabilitychecker.InternetAvailabilityChecker;
+import com.treebo.internetavailabilitychecker.InternetConnectivityListener;
+
 import ba.unsa.etf.rma.spirala.graphs.GraphsFragment;
 import ba.unsa.etf.rma.spirala.budget.BudgetFragment;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
@@ -26,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FrameLayout details = findViewById(R.id.transaction_detail);
@@ -72,6 +76,22 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
         Bundle arguments = new Bundle();
         if(transaction != null) {
             arguments.putParcelable("transaction", transaction);
+        }
+        TransactionDetailFragment detailFragment = new TransactionDetailFragment();
+        detailFragment.setArguments(arguments);
+        if (twoPaneMode){
+            getSupportFragmentManager().beginTransaction().replace(R.id.transaction_detail, detailFragment).commit();
+        }
+        else {
+            getSupportFragmentManager().beginTransaction().replace(R.id.transactions_list, detailFragment).addToBackStack("main").commit();
+        }
+    }
+
+    @Override
+    public void displayDatabaseTransaction(Integer internalId) {
+        Bundle arguments = new Bundle();
+        if(internalId != null) {
+            arguments.putInt("internalId", internalId);
         }
         TransactionDetailFragment detailFragment = new TransactionDetailFragment();
         detailFragment.setArguments(arguments);
@@ -132,5 +152,6 @@ public class MainActivity extends AppCompatActivity implements OnItemClick {
         GraphsFragment graphsFragment = new GraphsFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.transactions_list, graphsFragment).addToBackStack("main").commit();
     }
+
 }
 

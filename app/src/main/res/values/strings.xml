@@ -22,5 +22,6 @@
     <string name="week">Week</string>
     <string name="api_id">b2fd13f4-2535-4bf8-a9e8-c74e49e6d4de</string>
     <string name="root">http://rma20-app-rmaws.apps.us-west-1.starter.openshift-online.com</string>
+    <string name="offline">OFFLINE</string>
 </resources>
 

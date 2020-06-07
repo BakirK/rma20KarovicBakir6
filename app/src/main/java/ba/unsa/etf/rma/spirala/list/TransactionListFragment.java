@@ -1,5 +1,6 @@
 package ba.unsa.etf.rma.spirala.list;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,9 +11,13 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+
+import com.treebo.internetavailabilitychecker.InternetAvailabilityChecker;
+import com.treebo.internetavailabilitychecker.InternetConnectivityListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,8 +31,9 @@ import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.util.ICallback;
 import ba.unsa.etf.rma.spirala.util.Callback;
+import ba.unsa.etf.rma.spirala.util.TransactionDBOpenHelper;
 
-public class TransactionListFragment extends Fragment implements ITransactionListView {
+public class TransactionListFragment extends Fragment implements ITransactionListView, InternetConnectivityListener {
     private TransactionListAdapter adapter;
     private TransactionSpinnerAdapter spinnerAdapter;
     private ITransactionListPresenter presenter;
@@ -35,7 +41,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     private TextView textViewAmount;
     private TextView textViewLimit;
     private TextView dateText;
-    private TextView monthlyLimit;
+    private TextView monthlyLimit, offlineText;
     private Spinner filterBySpinner;
     private Spinner sortBySpinner;
     private ImageButton nextBtn, prevBtn;
@@ -43,15 +49,26 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     private OnItemClick onItemClick;
     private Integer previousSelectedItemIndex;
     private ConstraintLayout layout;
+    private InternetAvailabilityChecker mInternetAvailabilityChecker;
+    private TransactionListCursorAdapter transactionListCursorAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View fragmentView = inflater.inflate(R.layout.fragment_list, container, false);
         adapter = new TransactionListAdapter(getActivity().getApplicationContext(), R.layout.list_element, new ArrayList<Transaction>());
+        transactionListCursorAdapter = new TransactionListCursorAdapter(getActivity(), R.layout.list_element, null, false);
+
+        InternetAvailabilityChecker.init(getActivity());
+        mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
+        mInternetAvailabilityChecker.addInternetConnectivityListener(this);
+
         transactionList = (ListView) fragmentView.findViewById(R.id.transactionList);
-        transactionList.setAdapter(adapter);
+
+        transactionList.setAdapter(transactionListCursorAdapter);
         d = new Date();
-        getPresenter().refreshTransactions(null, "Price - Ascending", d);
+        Toast.makeText(getActivity(), "init cursor", Toast.LENGTH_LONG).show();
+        getPresenter().refreshCursorTransactions(null, "Price - Ascending", d);
+
         init(fragmentView);
         fillSpinners();
         initListeners();
@@ -64,6 +81,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         textViewLimit = (TextView) fragmentView.findViewById(R.id.textViewLimit);
         dateText = (TextView) fragmentView.findViewById(R.id.dateText);
         monthlyLimit = (TextView) fragmentView.findViewById(R.id.monthlyLimit);
+        offlineText = (TextView) fragmentView.findViewById(R.id.offlineText);
         filterBySpinner = fragmentView.findViewById(R.id.filterBySpinner);
         sortBySpinner = fragmentView.findViewById(R.id.sortBySpinner);
         nextBtn = (ImageButton) fragmentView.findViewById(R.id.nextBtn);
@@ -99,7 +117,16 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
             d = calendar.getTime();
             SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
             dateText.setText(format.format(d));
-            getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+            if (mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
+                transactionList.setAdapter(adapter);
+                transactionList.setOnItemClickListener(listItemClickListener);
+                getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+            }
+            else {
+                transactionList.setAdapter(transactionListCursorAdapter);
+                transactionList.setOnItemClickListener(listCursorItemClickListener);
+                getPresenter().refreshCursorTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+            }
         });
 
         nextBtn.setOnClickListener(v -> {
@@ -109,23 +136,41 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
             d = calendar.getTime();
             SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
             dateText.setText(format.format(d));
-            getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
-        });
-
-        AdapterView.OnItemClickListener listItemClickListener = (parent, view, position, id) -> {
-            if(previousSelectedItemIndex == position) {
-                onItemClick.displayTransaction(null);
-                previousSelectedItemIndex = -1;
+            if (mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
+                transactionList.setAdapter(adapter);
+                transactionList.setOnItemClickListener(listItemClickListener);
                 getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
-            } else {
-                previousSelectedItemIndex = position;
-                Transaction transaction = adapter.getTransactionAt(position);
-                onItemClick.displayTransaction(transaction);
             }
-        };
-
-        transactionList.setOnItemClickListener(listItemClickListener);
+            else {
+                transactionList.setAdapter(transactionListCursorAdapter);
+                transactionList.setOnItemClickListener(listCursorItemClickListener);
+                getPresenter().refreshCursorTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+            }
+        });
+        transactionList.setOnItemClickListener(listCursorItemClickListener);
     }
+
+    private AdapterView.OnItemClickListener listItemClickListener = (parent, view, position, id) -> {
+        if(previousSelectedItemIndex == position) {
+            onItemClick.displayTransaction(null);
+            previousSelectedItemIndex = -1;
+            getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+        } else {
+            previousSelectedItemIndex = position;
+            Transaction transaction = adapter.getTransactionAt(position);
+            onItemClick.displayTransaction(transaction);
+        }
+    };
+
+    private AdapterView.OnItemClickListener listCursorItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+            if(cursor != null) {
+                onItemClick.displayDatabaseTransaction(cursor.getInt(cursor.getColumnIndex(TransactionDBOpenHelper.TRANSACTION_INTERNAL_ID)));
+            }
+        }
+    };
 
     private void fillSpinners() {
         //filterBy
@@ -141,7 +186,16 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         filterBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                getPresenter().refreshTransactions((Transaction.Type)parent.getItemAtPosition(position), sortBySpinner.getSelectedItem().toString(), d);
+                if (mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
+                    transactionList.setAdapter(adapter);
+                    transactionList.setOnItemClickListener(listItemClickListener);
+                    getPresenter().refreshTransactions((Transaction.Type)parent.getItemAtPosition(position), sortBySpinner.getSelectedItem().toString(), d);
+                }
+                else {
+                    transactionList.setAdapter(transactionListCursorAdapter);
+                    transactionList.setOnItemClickListener(listCursorItemClickListener);
+                    getPresenter().refreshCursorTransactions((Transaction.Type)parent.getItemAtPosition(position), sortBySpinner.getSelectedItem().toString(), d);
+                }
             }
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
@@ -164,7 +218,16 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         sortBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), parent.getItemAtPosition(position).toString(), d);
+                if (mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
+                    transactionList.setAdapter(adapter);
+                    transactionList.setOnItemClickListener(listItemClickListener);
+                    getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), parent.getItemAtPosition(position).toString(), d);
+                }
+                else {
+                    transactionList.setAdapter(transactionListCursorAdapter);
+                    transactionList.setOnItemClickListener(listCursorItemClickListener);
+                    getPresenter().refreshCursorTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), parent.getItemAtPosition(position).toString(), d);
+                }
             }
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
@@ -185,9 +248,19 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
     @Override
     public void setTextViewText(Account account) {
-        textViewAmount.setText(String.format("%.2f", account.getBudget()));
-        textViewLimit.setText(String.format("%.2f", account.getTotalLimit()));
-        monthlyLimit.setText(String.format("%.2f", account.getMonthLimit()));
+        if(account != null) {
+            textViewAmount.setText(String.format("%.2f", account.getBudget()));
+            textViewLimit.setText(String.format("%.2f", account.getTotalLimit()));
+            monthlyLimit.setText(String.format("%.2f", account.getMonthLimit()));
+        }
+
+    }
+
+    @Override
+    public void setCursor(Cursor cursor) {
+        transactionList.setAdapter(transactionListCursorAdapter);
+        transactionList.setOnItemClickListener(listCursorItemClickListener);
+        transactionListCursorAdapter.changeCursor(cursor);
     }
 
 
@@ -210,5 +283,22 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
                     }
                 })
         );
+    }
+
+    @Override
+    public void onInternetConnectivityChanged(boolean isConnected) {
+        if (isConnected) {
+            transactionList.setAdapter(adapter);
+            transactionList.setOnItemClickListener(listItemClickListener);
+            Toast.makeText(getActivity(), "og adapter", Toast.LENGTH_LONG).show();
+            getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+            offlineText.setVisibility(View.INVISIBLE);
+        }
+        else {
+            transactionList.setAdapter(transactionListCursorAdapter);
+            transactionList.setOnItemClickListener(listCursorItemClickListener);
+            getPresenter().refreshCursorTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+            offlineText.setVisibility(View.VISIBLE);
+        }
     }
 }

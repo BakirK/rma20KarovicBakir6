@@ -8,15 +8,22 @@ public class Account implements Parcelable {
     private double budget;
     private double totalLimit;
     private double monthLimit;
-    private String email;
+    private Integer internalId;
 
 
-    public Account(Integer id, double budget, double totalLimit, double monthLimit, String email) {
+    public Account(Integer id, double budget, double totalLimit, double monthLimit) {
         this.id = id;
         this.budget = budget;
         this.totalLimit = totalLimit;
         this.monthLimit = monthLimit;
-        this.email = email;
+    }
+
+    public Account(Integer id, double budget, double totalLimit, double monthLimit, Integer internalId) {
+        this.id = id;
+        this.budget = budget;
+        this.totalLimit = totalLimit;
+        this.monthLimit = monthLimit;
+        this.internalId = internalId;
     }
 
     protected Account(Parcel in) {
@@ -24,7 +31,6 @@ public class Account implements Parcelable {
         budget = in.readDouble();
         totalLimit = in.readDouble();
         monthLimit = in.readDouble();
-        email = in.readString();
     }
 
     public static final Creator<Account> CREATOR = new Creator<Account>() {
@@ -71,12 +77,12 @@ public class Account implements Parcelable {
         this.monthLimit = monthLimit;
     }
 
-    public String getEmail() {
-        return email;
+    public Integer getInternalId() {
+        return internalId;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setInternalId(Integer internalId) {
+        this.internalId = internalId;
     }
 
     @Override
@@ -90,7 +96,6 @@ public class Account implements Parcelable {
         dest.writeDouble(budget);
         dest.writeDouble(totalLimit);
         dest.writeDouble(monthLimit);
-        dest.writeString(email);
     }
 }
 

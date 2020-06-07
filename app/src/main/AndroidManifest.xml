@@ -18,6 +18,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <provider
+            android:authorities="rma.provider.transactions"
+            android:name=".util.TransactionContentProvider">
+        </provider>
+        <provider
+            android:authorities="rma.provider.accounts"
+            android:name=".util.AccountContentProvider">
+        </provider>
     </application>
 
 </manifest>

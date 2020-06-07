@@ -11,5 +11,7 @@ public interface OnItemClick {
     void displayAccount();
     void displayList();
     void displayGraphs();
+    void displayDatabaseTransaction(Integer internalId);
+
 }
 

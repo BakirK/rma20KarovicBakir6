@@ -42,8 +42,7 @@ public class AccountInteractor extends AsyncTask<String, Integer, Void> implemen
             Double budget = jo.getDouble("budget");
             Double totalLimit = jo.getDouble("totalLimit");
             Double monthLimit = jo.getDouble("monthLimit");
-            String email = jo.getString("email");
-            account = new Account(id, budget, totalLimit, monthLimit, email);
+            account = new Account(id, budget, totalLimit, monthLimit);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
