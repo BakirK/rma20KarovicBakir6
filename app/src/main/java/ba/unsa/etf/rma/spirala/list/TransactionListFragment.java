@@ -66,7 +66,6 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
         transactionList.setAdapter(transactionListCursorAdapter);
         d = new Date();
-        Toast.makeText(getActivity(), "init cursor", Toast.LENGTH_LONG).show();
         getPresenter().refreshCursorTransactions(null, "Price - Ascending", d);
 
         init(fragmentView);
@@ -86,7 +85,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         sortBySpinner = fragmentView.findViewById(R.id.sortBySpinner);
         nextBtn = (ImageButton) fragmentView.findViewById(R.id.nextBtn);
         prevBtn = (ImageButton) fragmentView.findViewById(R.id.prevBtn);
-        getPresenter().refreshAccount();
+        getPresenter().refreshAccount(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus());
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         dateText.setText(format.format(d));
         try {
@@ -278,17 +277,26 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     }
 
     public void updateTransactionListData() {
-        getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
-        getPresenter().getBudget(
-                new Callback(new ICallback() {
-                    @Override
-                    public Object callback(Object o) {
-                        Double budget = (Double) o;
-                        textViewAmount.setText(String.format("%.2f", budget));
-                        return 0;
-                    }
-                })
-        );
+        if(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
+            transactionList.setAdapter(adapter);
+            transactionList.setOnItemClickListener(listItemClickListener);
+            getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+            getPresenter().getBudget(
+                    new Callback(new ICallback() {
+                        @Override
+                        public Object callback(Object o) {
+                            Double budget = (Double) o;
+                            textViewAmount.setText(String.format("%.2f", budget));
+                            return 0;
+                        }
+                    })
+            );
+        } else {
+            transactionList.setAdapter(transactionListCursorAdapter);
+            transactionList.setOnItemClickListener(listCursorItemClickListener);
+            getPresenter().refreshCursorTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+
+        }
     }
 
     @Override
@@ -296,15 +304,18 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         if (isConnected) {
             transactionList.setAdapter(adapter);
             transactionList.setOnItemClickListener(listItemClickListener);
-            Toast.makeText(getActivity(), "og adapter", Toast.LENGTH_LONG).show();
             getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
             offlineText.setVisibility(View.INVISIBLE);
+
+            getPresenter().refreshAccount(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus());
         }
         else {
             transactionList.setAdapter(transactionListCursorAdapter);
             transactionList.setOnItemClickListener(listCursorItemClickListener);
             getPresenter().refreshCursorTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
             offlineText.setVisibility(View.VISIBLE);
+
+            getPresenter().refreshAccount(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus());
         }
     }
 }

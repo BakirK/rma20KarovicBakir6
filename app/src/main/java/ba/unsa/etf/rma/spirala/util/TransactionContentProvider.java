@@ -123,9 +123,9 @@ public class TransactionContentProvider extends ContentProvider {
             }
         }
         SQLiteDatabase database;
-        try{
+        try {
             database=mHelper.getWritableDatabase();
-        }catch (SQLiteException e){
+        } catch (SQLiteException e){
             database=mHelper.getReadableDatabase();
         }
         if (selection == null) selection = "";

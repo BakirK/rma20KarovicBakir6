@@ -17,7 +17,7 @@ public class AccountContentProvider extends ContentProvider {
     private static final UriMatcher uM;
     static {
         uM = new UriMatcher(UriMatcher.NO_MATCH);
-        uM.addURI("rma.provider.accounts","elements/#",ONEROW);
+        uM.addURI("rma.provider.accounts","elements",ONEROW);
     }
     TransactionDBOpenHelper mHelper;
 
@@ -42,12 +42,6 @@ public class AccountContentProvider extends ContentProvider {
         String having=null;
         SQLiteQueryBuilder squery = new SQLiteQueryBuilder();
 
-        switch (uM.match(uri)){
-            case ONEROW:
-                String idRow = uri.getPathSegments().get(1);
-                squery.appendWhere(TransactionDBOpenHelper.ACCOUNT_INTERNAL_ID+"="+idRow);
-            default:break;
-        }
         squery.setTables(TransactionDBOpenHelper.ACCOUNT_TABLE);
         Cursor cursor = squery.query(database,projection,selection,selectionArgs,groupby,having,sortOrder);
         return cursor;

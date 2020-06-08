@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.data.Account;
+import ba.unsa.etf.rma.spirala.data.AccountDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.data.TransactionAmount;
@@ -31,7 +32,6 @@ public class TransactionListPresenter implements ITransactionListPresenter {
         }), context).execute();
         this.view = view;
         this.context = context;
-        refreshAccount();
     }
 
     @Override
@@ -97,15 +97,21 @@ public class TransactionListPresenter implements ITransactionListPresenter {
     }
 
     @Override
-    public void refreshAccount() {
-        new AccountInteractor(new Callback(new ICallback() {
-            @Override
-            public Object callback(Object o) {
-                account = (Account)o;
-                view.setTextViewText(account);
-                return 0;
-            }
-        }), context).execute();
+    public void refreshAccount(boolean network) {
+        if(network) {
+            new AccountInteractor(new Callback(new ICallback() {
+                @Override
+                public Object callback(Object o) {
+                    account = (Account) o;
+                    view.setTextViewText(account);
+                    return 0;
+                }
+            }), context).execute();
+        } else {
+            AccountDatabaseInteractor accountDatabaseInteractor = new AccountDatabaseInteractor();
+            account = accountDatabaseInteractor.getAccount(context);
+            view.setTextViewText(account);
+        }
     }
 
     @Override
@@ -121,29 +127,4 @@ public class TransactionListPresenter implements ITransactionListPresenter {
         }), context).execute();
     }
 
-    @Override
-    public void getTotalLimit(Callback l) {
-        if(account != null) {
-            l.pass(account.getTotalLimit());
-        }
-        new AccountInteractor(new Callback(new ICallback() {
-            @Override
-            public Object callback(Object o) {
-                return l.pass(((Account)o).getTotalLimit());
-            }
-        }), context).execute();
-    }
-
-    @Override
-    public void getMonthLimit(Callback l) {
-        if(account != null) {
-            l.pass(account.getMonthLimit());
-        }
-        new AccountInteractor(new Callback(new ICallback() {
-            @Override
-            public Object callback(Object o) {
-                return l.pass(((Account)o).getMonthLimit());
-            }
-        }), context).execute();
-    }
 }
