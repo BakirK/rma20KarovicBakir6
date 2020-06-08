@@ -13,8 +13,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.data.Account;
+import ba.unsa.etf.rma.spirala.data.AccountDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
-import ba.unsa.etf.rma.spirala.data.ITransactionDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.data.TransactionAmount;
 import ba.unsa.etf.rma.spirala.data.TransactionDatabaseInteractor;
@@ -32,14 +32,23 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     private Account account;
 
     public TransactionDetailPresenter(Context context) {
-        new AccountInteractor(new Callback(new ICallback() {
-            @Override
-            public Object callback(Object o) {
-                account = (Account) o;
-                return 0;
-            }
-        }), context).execute();
         this.context = context;
+    }
+
+    @Override
+    public void refreshAccount(boolean network) {
+        if (network) {
+            new AccountInteractor(new Callback(new ICallback() {
+                @Override
+                public Object callback(Object o) {
+                    account = (Account) o;
+                    return 0;
+                }
+            }), context).execute();
+        } else {
+            AccountDatabaseInteractor accountDatabaseInteractor = new AccountDatabaseInteractor();
+            this.account = accountDatabaseInteractor.getAccount(context);
+        }
     }
 
     @Override
@@ -78,7 +87,9 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
     }
 
     @Override
-    public void overMonthLimit(Callback callback, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
+    public void overMonthLimit(Callback callback, Date date, double amount,
+                               String title, Transaction.Type type, @Nullable String itemDescription,
+                               @Nullable Integer transactionInterval, @Nullable Date endDate, boolean network) {
         Double thisAmount = 0.;
         if(this.transaction != null) {
             if(Transaction.isIncome(this.transaction.getType())) {
@@ -111,23 +122,37 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
 
         Double finalThisAmount = thisAmount;
         Double finalAmount = amount;
-        new TransactionSortInteractor(new Callback(new ICallback() {
-            @Override
-            public Object callback(Object o) {
-                Double monthExpenses = TransactionAmount.getMonthlyAmount((ArrayList<Transaction>) o, date);
-                monthExpenses -= finalThisAmount;
-                monthExpenses += finalAmount;
-                Log.d("month total", Double.toString(monthExpenses));
-                boolean over = account.getMonthLimit() < monthExpenses;
-                callback.pass(over);
-                return 0;
-            }
-        }), context).execute(null, month, year, null, null);
+        if(network) {
+            new TransactionSortInteractor(new Callback(new ICallback() {
+                @Override
+                public Object callback(Object o) {
+                    Double monthExpenses = TransactionAmount.getMonthlyAmount((ArrayList<Transaction>) o, date);
+                    monthExpenses -= finalThisAmount;
+                    monthExpenses += finalAmount;
+                    Log.d("month total", Double.toString(monthExpenses));
+                    boolean over = account.getMonthLimit() < monthExpenses;
+                    callback.pass(over);
+                    return 0;
+                }
+            }), context).execute(null, month, year, null, null);
+        } else {
+            TransactionDatabaseInteractor transactionDatabaseInteractor = new TransactionDatabaseInteractor();
+            ArrayList<Transaction> transactions = transactionDatabaseInteractor.getTransactions(context);
+            Double monthExpenses = TransactionAmount.getMonthlyAmount(transactions, date);
+            monthExpenses -= finalThisAmount;
+            monthExpenses += finalAmount;
+            Log.d("month total", Double.toString(monthExpenses));
+            boolean over = account.getMonthLimit() < monthExpenses;
+            callback.pass(over);
+        }
+
     }
 
 
     @Override
-    public void overGlobalLimit(Callback callback, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription, @Nullable Integer transactionInterval, @Nullable Date endDate) {
+    public void overGlobalLimit(Callback callback, Date date, double amount,
+                                String title, Transaction.Type type, @Nullable String itemDescription,
+                                @Nullable Integer transactionInterval, @Nullable Date endDate, boolean network) {
         Double thisAmount = 0.;
         if(this.transaction != null) {
             if(Transaction.isIncome(this.transaction.getType())) {
@@ -150,17 +175,28 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
 
         Double finalThisAmount = thisAmount;
         Double finalAmount = amount;
-        new TransactionListInteractor(new Callback(new ICallback() {
-            @Override
-            public Object callback(Object o) {
-                Double totalExpenses = TransactionAmount.getTotalAmount((ArrayList<Transaction>) o);
-                totalExpenses -= finalThisAmount;
-                totalExpenses += finalAmount;
-                boolean over = totalExpenses > account.getTotalLimit();
-                callback.pass(over);
-                return 0;
-            }
-        }), context).execute();
+        if(network) {
+            new TransactionListInteractor(new Callback(new ICallback() {
+                @Override
+                public Object callback(Object o) {
+                    Double totalExpenses = TransactionAmount.getTotalAmount((ArrayList<Transaction>) o);
+                    totalExpenses -= finalThisAmount;
+                    totalExpenses += finalAmount;
+                    boolean over = totalExpenses > account.getTotalLimit();
+                    callback.pass(over);
+                    return 0;
+                }
+            }), context).execute();
+        } else {
+            TransactionDatabaseInteractor transactionDatabaseInteractor = new TransactionDatabaseInteractor();
+            ArrayList<Transaction> transactions = transactionDatabaseInteractor.getTransactions(context);
+            Double totalExpenses = TransactionAmount.getTotalAmount(transactions);
+            totalExpenses -= finalThisAmount;
+            totalExpenses += finalAmount;
+            boolean over = totalExpenses > account.getTotalLimit();
+            callback.pass(over);
+        }
+
     }
 
     @Override
@@ -222,6 +258,7 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
         }
     }
 
+    //via network
     private void updateTransaction() {
         String date = Transaction.format.format(transaction.getDate());
         String title = transaction.getTitle();

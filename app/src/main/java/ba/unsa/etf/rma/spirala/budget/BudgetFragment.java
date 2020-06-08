@@ -13,26 +13,30 @@ import android.widget.Toast;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
+import com.treebo.internetavailabilitychecker.InternetAvailabilityChecker;
+import com.treebo.internetavailabilitychecker.InternetConnectivityListener;
+
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Account;
 import ba.unsa.etf.rma.spirala.listeners.OnItemClick;
 import ba.unsa.etf.rma.spirala.listeners.OnSwipeTouchListener;
 
-public class BudgetFragment extends Fragment implements IBudgetView {
-    private TextView amountText;
+public class BudgetFragment extends Fragment implements IBudgetView, InternetConnectivityListener {
+    private TextView amountText, offlineText;
     private Button saveBtn;
     private EditText monthlyLimitText;
     private EditText globalLimitText;
     private ConstraintLayout layout;
     private BudgetPresenter presenter;
     private OnItemClick onItemClick;
+    private InternetAvailabilityChecker mInternetAvailabilityChecker;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View fragmentView = inflater.inflate(R.layout.budget_fragment, container, false);
         init(fragmentView);
         initListeners();
-        getPresenter();
+        getPresenter().refreshAccount(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus());
         return fragmentView;
     }
     @Override
@@ -88,7 +92,7 @@ public class BudgetFragment extends Fragment implements IBudgetView {
                     showToast("Global limit can't be negative!");
                     return;
                 }
-                getPresenter().updateLimits(globalLimit, monthlyLimit);
+                getPresenter().updateLimits(globalLimit, monthlyLimit, mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus());
             }
         });
     }
@@ -99,11 +103,21 @@ public class BudgetFragment extends Fragment implements IBudgetView {
         saveBtn = view.findViewById(R.id.saveBtn);
         monthlyLimitText = view.findViewById(R.id.monthlyLimitText);
         globalLimitText = view.findViewById(R.id.globalLimitText);
+        offlineText = (TextView) view.findViewById(R.id.offlineText);
         layout = (ConstraintLayout) view.findViewById(R.id.layout);
         try {
             onItemClick = (OnItemClick)getActivity();
         } catch (ClassCastException e) {
             throw new ClassCastException(getActivity().toString() + "Treba implementirati OnItemClick interfejs");
+        }
+
+        InternetAvailabilityChecker.init(getActivity());
+        mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
+        mInternetAvailabilityChecker.addInternetConnectivityListener(this);
+        if(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
+            offlineText.setVisibility(View.INVISIBLE);
+        } else {
+            offlineText.setVisibility(View.VISIBLE);
         }
     }
 
@@ -117,6 +131,17 @@ public class BudgetFragment extends Fragment implements IBudgetView {
     public void showToast(String text) {
         if(getActivity() != null) {
             Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onInternetConnectivityChanged(boolean isConnected) {
+        getPresenter().refreshAccount(isConnected);
+        if (isConnected) {
+            offlineText.setVisibility(View.INVISIBLE);
+        }
+        else {
+            offlineText.setVisibility(View.VISIBLE);
         }
     }
 }

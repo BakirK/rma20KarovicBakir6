@@ -317,7 +317,9 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
                                             type,
                                             itemDescription.getText().toString(),
                                             interval,
-                                            inputEndDate);
+                                            inputEndDate,
+                                            mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()
+                                    );
                                     return 0;
                                 }
                             }),
@@ -327,7 +329,8 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
                             type,
                             itemDescription.getText().toString(),
                             interval,
-                            inputEndDate
+                            inputEndDate,
+                            mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()
                     );
                 }
                     /*WARNING - SPANISH SPAGHETTI LANGUAGE AHEAD* - DANGER*/
@@ -551,12 +554,14 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
     public ITransactionDetailPresenter getPresenter() {
         if(presenter == null) {
             presenter = new TransactionDetailPresenter(getActivity());
+            presenter.refreshAccount(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus());
         }
         return presenter;
     }
 
     @Override
     public void onInternetConnectivityChanged(boolean isConnected) {
+        getPresenter().refreshAccount(isConnected);
         if (isConnected) {
             offlineText.setVisibility(View.INVISIBLE);
         }

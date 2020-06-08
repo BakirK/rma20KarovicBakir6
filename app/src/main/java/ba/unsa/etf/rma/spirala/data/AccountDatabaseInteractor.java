@@ -7,6 +7,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 
+import java.io.FileNotFoundException;
+
 import ba.unsa.etf.rma.spirala.util.TransactionDBOpenHelper;
 
 public class AccountDatabaseInteractor implements IAccountDatabaseInteractor {
@@ -41,7 +43,7 @@ public class AccountDatabaseInteractor implements IAccountDatabaseInteractor {
             Double budget = cursor.getDouble(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.ACCOUNT_BUDGET));
             Double monthLimit = cursor.getDouble(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.ACCOUNT_MONTH_LIMIT));
             Double globalLimit = cursor.getDouble(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.ACCOUNT_TOTAL_LIMIT));
-            a = new Account(id, budget, monthLimit, globalLimit);
+            a = new Account(id, budget, globalLimit, monthLimit);
         }
         cursor.close();
         return  a;
@@ -57,7 +59,11 @@ public class AccountDatabaseInteractor implements IAccountDatabaseInteractor {
         values.put(TransactionDBOpenHelper.ACCOUNT_BUDGET, account.getBudget());
         values.put(TransactionDBOpenHelper.ACCOUNT_MONTH_LIMIT, account.getMonthLimit());
         values.put(TransactionDBOpenHelper.ACCOUNT_TOTAL_LIMIT, account.getTotalLimit());
-        cr.update(address, values, null, null);
+        try {
+            cr.update(address, values, null, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

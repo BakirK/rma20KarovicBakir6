@@ -18,12 +18,14 @@ public interface ITransactionDetailPresenter {
     void setTransaction(Transaction t);
     Transaction getTransaction();
     void overMonthLimit(Callback callback, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription,
-                        @Nullable Integer transactionInterval, @Nullable Date endDate);
+                        @Nullable Integer transactionInterval, @Nullable Date endDate, boolean network);
     void overGlobalLimit(Callback callback, Date date, double amount, String title, Transaction.Type type, @Nullable String itemDescription,
-                         @Nullable Integer transactionInterval, @Nullable Date endDate);
+                         @Nullable Integer transactionInterval, @Nullable Date endDate, boolean network);
 
     static Transaction getDatabaseTransaction(Context context, int internalId) {
         TransactionDatabaseInteractor transactionDatabaseInteractor = new TransactionDatabaseInteractor();
         return transactionDatabaseInteractor.getTransaction(context, internalId);
     }
+    void refreshAccount(boolean network);
+
 }

@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.spirala.budget;
 
 import android.content.Context;
 import ba.unsa.etf.rma.spirala.data.Account;
+import ba.unsa.etf.rma.spirala.data.AccountDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
 import ba.unsa.etf.rma.spirala.data.AccountPostInteractor;
 import ba.unsa.etf.rma.spirala.util.ICallback;
@@ -14,64 +15,12 @@ public class BudgetPresenter implements IBudgetPresenter {
     public BudgetPresenter(IBudgetView view, Context context) {
         this.context = context;
         this.view = view;
-        refreshAccount();
     }
 
     @Override
-    public void refreshAccount() {
-        new AccountInteractor(
-                new Callback(new ICallback() {
-                    @Override
-                    public Object callback(Object o) {
-                        account = (Account)o;
-                        view.refreshFields(account);
-                        return 0;
-                    }
-                }),
-                context
-        ).execute();
-    }
-
-    @Override
-    public void updateLimits(double totalLimit, double monthlyLimit) {
-        new AccountPostInteractor(
-                new Callback(new ICallback() {
-                    @Override
-                    public Object callback(Object o) {
-                        account = (Account)o;
-                        view.refreshFields(account);
-                        return 0;
-                    }
-                }), context
-        ).execute(
-            Double.toString(account.getBudget()),
-            Double.toString(totalLimit),
-            Double.toString(monthlyLimit)
-        );
-    }
-
-    @Override
-    public void setBudget(double budget) {
-        new AccountPostInteractor(
-                new Callback(new ICallback() {
-                    @Override
-                    public Object callback(Object o) {
-                        account = (Account)o;
-                        view.refreshFields(account);
-                        return 0;
-                    }
-                }),
-                context
-        ).execute(
-            Double.toString(budget),
-            Double.toString(account.getTotalLimit()),
-            Double.toString(account.getMonthLimit())
-        );
-    }
-
-    @Override
-    public void setTotalLimit(double totalLimit) {
-            new AccountPostInteractor(
+    public void refreshAccount(boolean network) {
+        if(network) {
+            new AccountInteractor(
                     new Callback(new ICallback() {
                         @Override
                         public Object callback(Object o) {
@@ -81,44 +30,44 @@ public class BudgetPresenter implements IBudgetPresenter {
                         }
                     }),
                     context
+            ).execute();
+        } else {
+            AccountDatabaseInteractor adi = new AccountDatabaseInteractor();
+            this.account = adi.getAccount(context);
+            view.refreshFields(this.account);
+        }
+
+    }
+
+    @Override
+    public void updateLimits(double totalLimit, double monthlyLimit, boolean network) {
+        if(network) {
+            new AccountPostInteractor(
+                    new Callback(new ICallback() {
+                        @Override
+                        public Object callback(Object o) {
+                            account = (Account)o;
+                            view.refreshFields(account);
+                            view.showToast("Changes saved");
+                            return 0;
+                        }
+                    }), context
             ).execute(
-                Double.toString(account.getBudget()),
-                Double.toString(totalLimit),
-                Double.toString(account.getMonthLimit())
-        );
+                    Double.toString(account.getBudget()),
+                    Double.toString(totalLimit),
+                    Double.toString(monthlyLimit)
+            );
+        } else {
+            AccountDatabaseInteractor adi = new AccountDatabaseInteractor();
+            this.account.setTotalLimit(totalLimit);
+            this.account.setMonthLimit(monthlyLimit);
+            adi.updateAccount(context, this.account);
+            this.account = adi.getAccount(context);
+            view.refreshFields(this.account);
+            view.showToast("Changes saved");
+        }
+
     }
 
-    @Override
-    public void setMonthLimit(double monthLimit) {
-        new AccountPostInteractor(
-                new Callback(new ICallback() {
-                    @Override
-                    public Object callback(Object o) {
-                        account = (Account)o;
-                        view.refreshFields(account);
-                        return 0;
-                    }
-                }),
-                context
-        ).execute(
-            Double.toString(account.getBudget()),
-            Double.toString(account.getTotalLimit()),
-            Double.toString(monthLimit)
-        );
-    }
 
-    @Override
-    public double getBudget() {
-        return account.getBudget();
-    }
-
-    @Override
-    public double getTotalLimit() {
-        return account.getTotalLimit();
-    }
-
-    @Override
-    public double getMonthlyLimit() {
-        return account.getMonthLimit();
-    }
 }

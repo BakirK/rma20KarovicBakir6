@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.util.TransactionDBOpenHelper;
@@ -141,5 +142,50 @@ public class TransactionDatabaseInteractor implements ITransactionDatabaseIntera
         ContentResolver cr = context.getApplicationContext().getContentResolver();
         Uri address = ContentUris.withAppendedId(Uri.parse("content://rma.provider.transactions/elements"), internalId);
         cr.delete(address, null, null);
+    }
+
+    @Override
+    public ArrayList<Transaction> getTransactions(Context context) {
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        ContentResolver cr = context.getApplicationContext().getContentResolver();
+        String[] columns = null;
+        Uri address = Uri.parse("content://rma.provider.transactions/elements");
+        String where = null;
+        String whereArgs[] = null;
+        String order = null;
+        Cursor cursor = cr.query(address, columns, where, whereArgs, order);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                int id = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ID);
+                String date = cursor.getString(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_DATE));
+                int amount = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_AMOUNT);
+                int title = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TITLE);
+                int type = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TYPE);
+                int itemDescription = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ITEMDESCRIPTION);
+                int interval = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TRANSACTIONINTERVAL);
+                String endDate = cursor.getString(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ENDDATE));
+                int internalId = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_INTERNAL_ID);
+                Date tDate = null, eDate = null;
+                if(date != null) {
+                    try {
+                        tDate = Transaction.format.parse(date);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if(endDate != null) {
+                    try {
+                        eDate = Transaction.format.parse(endDate);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }
+                transactions.add(new Transaction(cursor.getInt(id), tDate,
+                        cursor.getDouble(amount), cursor.getString(title), Transaction.Type.valueOf(cursor.getString(type)),
+                        cursor.getString(itemDescription), cursor.getInt(interval) , eDate, cursor.getInt(internalId)));
+            }
+        }
+        cursor.close();
+        return transactions;
     }
 }
