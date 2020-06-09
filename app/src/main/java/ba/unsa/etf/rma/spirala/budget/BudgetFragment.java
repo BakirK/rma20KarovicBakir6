@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.spirala.budget;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,9 +42,11 @@ public class BudgetFragment extends Fragment implements IBudgetView, InternetCon
     }
     @Override
     public void refreshFields(Account account) {
-        amountText.setText(Double.toString(account.getBudget()));
-        monthlyLimitText.setText(Double.toString(account.getMonthLimit()));
-        globalLimitText.setText(Double.toString(account.getTotalLimit()));
+        if(account != null) {
+            amountText.setText(Double.toString(account.getBudget()));
+            monthlyLimitText.setText(Double.toString(account.getMonthLimit()));
+            globalLimitText.setText(Double.toString(account.getTotalLimit()));
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -113,6 +116,7 @@ public class BudgetFragment extends Fragment implements IBudgetView, InternetCon
 
         InternetAvailabilityChecker.init(getActivity());
         mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
+        mInternetAvailabilityChecker.removeAllInternetConnectivityChangeListeners();
         mInternetAvailabilityChecker.addInternetConnectivityListener(this);
         if(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
             offlineText.setVisibility(View.INVISIBLE);
@@ -139,9 +143,11 @@ public class BudgetFragment extends Fragment implements IBudgetView, InternetCon
         getPresenter().refreshAccount(isConnected);
         if (isConnected) {
             offlineText.setVisibility(View.INVISIBLE);
+            Log.d("online3","online");
         }
         else {
             offlineText.setVisibility(View.VISIBLE);
+            Log.d("online3","online");
         }
     }
 }

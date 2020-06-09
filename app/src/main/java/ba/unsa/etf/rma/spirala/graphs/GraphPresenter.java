@@ -71,10 +71,12 @@ public class GraphPresenter implements IGraphPresenter {
         new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
-                ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
-                getDailyExpensesEntries(transactions, expenses);
-                getDailyIncomeEntries(transactions, income);
-                getDailyBudgetEntries(transactions, budget);
+                if(o instanceof ArrayList) {
+                    ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
+                    getDailyExpensesEntries(transactions, expenses);
+                    getDailyIncomeEntries(transactions, income);
+                    getDailyBudgetEntries(transactions, budget);
+                }
                 return 0;
             }
         }), context).execute();
@@ -85,10 +87,12 @@ public class GraphPresenter implements IGraphPresenter {
         new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
-                ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
-                getMonthlyExpensesEntries(transactions, expenses);
-                getMonthlyIncomeEntries(transactions, income);
-                getMonthlyBudgetEntries(transactions, budget);
+                if(o instanceof ArrayList) {
+                    ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
+                    getMonthlyExpensesEntries(transactions, expenses);
+                    getMonthlyIncomeEntries(transactions, income);
+                    getMonthlyBudgetEntries(transactions, budget);
+                }
                 return 0;
             }
         }), context).execute();
@@ -99,10 +103,12 @@ public class GraphPresenter implements IGraphPresenter {
         new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
-                ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
-                getWeeklyExpensesEntries(transactions, expenses);
-                getWeeklyIncomeEntries(transactions, income);
-                getWeeklyBudgetEntries(transactions, budget);
+                if(o instanceof ArrayList) {
+                    ArrayList<Transaction> transactions = (ArrayList<Transaction>)o;
+                    getWeeklyExpensesEntries(transactions, expenses);
+                    getWeeklyIncomeEntries(transactions, income);
+                    getWeeklyBudgetEntries(transactions, budget);
+                }
                 return 0;
             }
         }), context).execute();

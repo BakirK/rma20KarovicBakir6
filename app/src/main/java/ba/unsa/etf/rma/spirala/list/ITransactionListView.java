@@ -12,4 +12,5 @@ public interface ITransactionListView {
     void notifyTransactionListDataSetChanged();
     void setTextViewText(Account account);
     void setCursor(Cursor cursor);
+    void showToast(String message);
 }

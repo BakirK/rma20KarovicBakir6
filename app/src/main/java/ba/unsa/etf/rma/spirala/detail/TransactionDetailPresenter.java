@@ -179,11 +179,13 @@ public class TransactionDetailPresenter implements ITransactionDetailPresenter {
             new TransactionListInteractor(new Callback(new ICallback() {
                 @Override
                 public Object callback(Object o) {
-                    Double totalExpenses = TransactionAmount.getTotalAmount((ArrayList<Transaction>) o);
-                    totalExpenses -= finalThisAmount;
-                    totalExpenses += finalAmount;
-                    boolean over = totalExpenses > account.getTotalLimit();
-                    callback.pass(over);
+                    if(o instanceof ArrayList) {
+                        Double totalExpenses = TransactionAmount.getTotalAmount((ArrayList<Transaction>) o);
+                        totalExpenses -= finalThisAmount;
+                        totalExpenses += finalAmount;
+                        boolean over = totalExpenses > account.getTotalLimit();
+                        callback.pass(over);
+                    }
                     return 0;
                 }
             }), context).execute();

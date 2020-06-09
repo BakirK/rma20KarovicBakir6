@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,6 +70,7 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
         initFields(view);
         InternetAvailabilityChecker.init(getActivity());
         mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
+        mInternetAvailabilityChecker.removeAllInternetConnectivityChangeListeners();
         mInternetAvailabilityChecker.addInternetConnectivityListener(this);
         if(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus()) {
             offlineText.setVisibility(View.INVISIBLE);
@@ -563,9 +565,11 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
     public void onInternetConnectivityChanged(boolean isConnected) {
         getPresenter().refreshAccount(isConnected);
         if (isConnected) {
+            Log.d("online2","online");
             offlineText.setVisibility(View.INVISIBLE);
         }
         else {
+            Log.d("online2","online");
             offlineText.setVisibility(View.VISIBLE);
         }
     }

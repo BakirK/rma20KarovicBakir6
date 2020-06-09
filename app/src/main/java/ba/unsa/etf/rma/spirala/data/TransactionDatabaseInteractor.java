@@ -10,6 +10,7 @@ import android.util.Log;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.util.TransactionDBOpenHelper;
@@ -187,5 +188,61 @@ public class TransactionDatabaseInteractor implements ITransactionDatabaseIntera
         }
         cursor.close();
         return transactions;
+    }
+
+    @Override
+    public Cursor getTransactionCursor(Context context, Transaction.Type t, String orderBy, Date d) {
+        ContentResolver cr = context.getApplicationContext().getContentResolver();
+        String[] kolone = new String[]{
+                TransactionDBOpenHelper.TRANSACTION_INTERNAL_ID,
+                TransactionDBOpenHelper.TRANSACTION_ID,
+                TransactionDBOpenHelper.TRANSACTION_AMOUNT,
+                TransactionDBOpenHelper.TRANSACTION_DATE,
+                TransactionDBOpenHelper.TRANSACTION_TITLE,
+                TransactionDBOpenHelper.TRANSACTION_TYPE,
+                TransactionDBOpenHelper.TRANSACTION_ITEMDESCRIPTION,
+                TransactionDBOpenHelper.TRANSACTION_TRANSACTIONINTERVAL,
+                TransactionDBOpenHelper.TRANSACTION_ENDDATE,
+        };
+        Uri adresa = Uri.parse("content://rma.provider.transactions/elements");
+        String where = "";
+        ArrayList<String> whereArgs = new ArrayList<>();
+
+        //type
+        if(t != null && !t.toString().equals("ALL")) {
+            where += "type = ? AND ";
+            whereArgs.add(t.toString());
+        }
+
+        //date
+        where += "date >= ? AND date <= ?";
+        Calendar c = Transaction.toCalendar(d.getTime());
+        String month = String.valueOf(c.get(Calendar.MONTH)+1);
+        String year = String.valueOf(c.get(Calendar.YEAR));
+        if(month.length() == 1) month = "0" + month;
+        String firstDayDate = year + "-" + month + "-01";
+        whereArgs.add(firstDayDate);
+
+        //last day in month
+        c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+        String lastDayDate = year + "-" + month + c.get(Calendar.DAY_OF_MONTH);
+        whereArgs.add(lastDayDate);
+
+        //order by clause
+        String order = "";
+        if(orderBy.startsWith("Price")) {
+            order = "amount";
+        } else if(orderBy.startsWith("Title")) {
+            order = "title";
+        } else {
+            order = "date";
+        }
+        if(orderBy.endsWith("Ascending")) {
+            order += " ASC";
+        } else {
+            order +=" DESC";
+        }
+
+        return cr.query(adresa, kolone, where, whereArgs.toArray(new String[whereArgs.size()]), order);
     }
 }

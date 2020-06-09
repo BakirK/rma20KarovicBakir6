@@ -10,13 +10,16 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.util.Callback;
+import ba.unsa.etf.rma.spirala.util.Requests;
 import ba.unsa.etf.rma.spirala.util.Util;
 
 public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> {
@@ -60,8 +63,15 @@ public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> 
                     break outer;
                 } else page++;
                 for (int i = 0; i < results.length(); i++) {
-                    transactions.add(new Transaction(results.getJSONObject(i)));
+                    Transaction t = new Transaction(results.getJSONObject(i));
+                    transactions.add(t);
+                    /*try {
+                        insertTransaction(t);
+                    } catch (Exception e) {
+                        //e.printStackTrace();
+                    }*/
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
                 break outer;
@@ -74,4 +84,9 @@ public class TransactionSortInteractor extends AsyncTask<String, Integer, Void> 
         super.onPostExecute(aVoid);
         (this.callback).pass(transactions);
     }
+
+    /*public void insertTransaction(Transaction transaction) {
+        TransactionDatabaseInteractor transactionDatabaseInteractor = new TransactionDatabaseInteractor();
+        transactionDatabaseInteractor.addTransaction(context, transaction);
+    }*/
 }

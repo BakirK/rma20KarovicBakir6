@@ -63,6 +63,9 @@ public class Transaction implements Parcelable {
     }
 
     public static boolean sameDay(Date dateNow, Date transactionDate) {
+        if(dateNow == null || transactionDate == null) {
+            return dateNow == transactionDate;
+        }
         Calendar now = toCalendar(dateNow.getTime());
         Calendar tDate = toCalendar(transactionDate.getTime());
         int yearNow = now.get(Calendar.YEAR),
@@ -202,7 +205,7 @@ public class Transaction implements Parcelable {
         this.title = transaction.getString("title");
         this.type = Transaction.getTypeById(transaction.getInt("TransactionTypeId"));
         this.itemDescription = transaction.getString("itemDescription");
-        if(this.itemDescription.equals("null")) this.itemDescription = "";
+        if(this.itemDescription.equals("null")) this.itemDescription = null;
         Object interval = transaction.get("transactionInterval");
         if(interval != null && !interval.toString().equals("null")) {
             this.transactionInterval = Integer.parseInt(interval.toString());

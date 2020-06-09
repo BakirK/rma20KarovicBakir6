@@ -1,33 +1,35 @@
 package ba.unsa.etf.rma.spirala.list;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.R;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.data.TransactionDatabaseInteractor;
+import ba.unsa.etf.rma.spirala.data.TransactionUpdateInteractor;
 import ba.unsa.etf.rma.spirala.util.Callback;
-import ba.unsa.etf.rma.spirala.util.TransactionDBOpenHelper;
+import ba.unsa.etf.rma.spirala.util.ICallback;
+import ba.unsa.etf.rma.spirala.util.Requests;
 import ba.unsa.etf.rma.spirala.util.Util;
 
 public class TransactionListInteractor extends AsyncTask<String, Integer, Void> implements ITransactionListInteractor {
     private Context context;
     private Callback callback;
-    ArrayList<Transaction> transactions;
+    private ArrayList<Transaction> transactions;
 
     public TransactionListInteractor(Callback callback, Context context) {
         this.callback = callback;
@@ -35,20 +37,16 @@ public class TransactionListInteractor extends AsyncTask<String, Integer, Void> 
         transactions = new ArrayList<>();
     }
 
-    public TransactionListInteractor() {
-        transactions = new ArrayList<>();
-    }
-
     @Override
     protected Void doInBackground(String... strings) {
-        if(context != null) {
-            getAllPages();
-        }
+        getAllPages();
         return null;
     }
 
     private void getAllPages() {
+        publishProgress(0);
         int page = 0;
+        transactions = new ArrayList<>();
         outer: while(true) {
             String url1 = context.getString(R.string.root) + "/account/" +  context.getString(R.string.api_id)
                     + "/transactions?page=" + page;
@@ -65,79 +63,177 @@ public class TransactionListInteractor extends AsyncTask<String, Integer, Void> 
                 for (int i = 0; i < results.length(); i++) {
                     Transaction t = new Transaction(results.getJSONObject(i));
                     transactions.add(t);
-                    insertTransaction(t);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+               e.printStackTrace();
                 break outer;
             }
+        }
+        TransactionDatabaseInteractor tdi = new TransactionDatabaseInteractor();
+        ArrayList<Transaction> dbTransactions =  tdi.getTransactions(context);
+        if(dbTransactions == null || dbTransactions.isEmpty()) {
+            for (Transaction transaction: transactions) {
+                try {
+                    insertDatabaseTransaction(transaction);
+                } catch(Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+        }
+        syncTransactions();
+    }
+
+    private void syncTransactions() {
+        publishProgress(50);
+        TransactionDatabaseInteractor tdi = new TransactionDatabaseInteractor();
+        ArrayList<Transaction> dbTransactions =  tdi.getTransactions(context);
+        if(dbTransactions == null || dbTransactions.isEmpty()) {
+            return;
+        }
+        for (Transaction dbTransaction: dbTransactions) {
+            //add transaction
+            if(dbTransaction.getId() == 0) {
+                dbTransactions.remove(dbTransaction);
+                String url2 = context.getString(R.string.root)
+                        + "/account/"
+                        +  context.getString(R.string.api_id)
+                        + "/transactions";
+                String dateStr = Transaction.format.format(dbTransaction.getDate());
+                String titleStr = dbTransaction.getTitle();
+                String amountStr = dbTransaction.getAmount().toString();
+                String endDateStr = null;
+                if(dbTransaction.getEndDate() != null) {
+                    endDateStr = Transaction.format.format(dbTransaction.getEndDate());
+                }
+                String itemDescriptionStr = dbTransaction.getItemDescription();
+                String intervalStr = null;
+                if(dbTransaction.getTransactionInterval() != null) {
+                    intervalStr = dbTransaction.getTransactionInterval().toString();
+                }
+                String typeIdStr = Integer.toString(Transaction.getTypeId(dbTransaction.getType()));
+                try {
+                    JSONObject jsonParam = new JSONObject();
+                    jsonParam.put("date", dateStr);
+                    jsonParam.put("title", titleStr);
+                    jsonParam.put("amount", amountStr);
+                    jsonParam.put("endDate", endDateStr);
+                    jsonParam.put("itemDescription", itemDescriptionStr);
+                    jsonParam.put("transactionInterval", intervalStr);
+                    jsonParam.put("TransactionTypeId", typeIdStr);
+                    String response = Requests.post(url2, jsonParam);
+                    transactions.add(new Transaction(new JSONObject(response)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                loop: for (int i = 0; i < transactions.size(); i++) {
+                    if (
+                            transactions.get(i).getId() == dbTransaction.getId() && dbTransaction.getId() != -1
+                    ) {
+                        checkDiff(dbTransaction, transactions.get(i));
+                        break loop;
+                    }
+                }
+            }
+        }
+        rangovska: for(Transaction tr: transactions) {
+            for(Transaction dbTransaction: dbTransactions) {
+                if(tr.getId() == dbTransaction.getId()) {
+                    continue rangovska;
+                }
+            }
+            //transaction not found in db - delete it
+            String transactionId = null;
+            try {
+                transactionId = URLEncoder.encode(Integer.toString(tr.getId()), "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            String deleteUrl = context.getString(R.string.root)
+                    + "/account/"
+                    +  context.getString(R.string.api_id)
+                    + "/transactions/" + transactionId;
+            try {
+                Requests.delete(deleteUrl);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        publishProgress(100);
+    }
+
+    private void checkDiff(Transaction dbTransaction, Transaction transaction) {
+        boolean itemDesc = false;
+        if(dbTransaction.getItemDescription() == null || transaction.getItemDescription() == null) {
+            itemDesc = dbTransaction.getItemDescription() == transaction.getItemDescription();
+        } else {
+            itemDesc = dbTransaction.getItemDescription().equals(transaction.getItemDescription());
+        }
+        if(
+            dbTransaction.getType() != transaction.getType() ||
+            dbTransaction.getTransactionInterval() != transaction.getTransactionInterval() ||
+            !Transaction.sameDay(dbTransaction.getDate(), transaction.getDate()) ||
+            !Transaction.sameDay(dbTransaction.getEndDate(), transaction.getEndDate()) ||
+            !dbTransaction.getAmount().equals(transaction.getAmount()) ||
+            !itemDesc ||
+            !dbTransaction.getTitle().equals(transaction.getTitle())
+        ) {
+            transaction.setAmount(dbTransaction.getAmount());
+            transaction.setDate(dbTransaction.getDate());
+            transaction.setEndDate(dbTransaction.getEndDate());
+            transaction.setItemDescription(dbTransaction.getItemDescription());
+            transaction.setTitle(dbTransaction.getTitle());
+            transaction.setTransactionInterval(dbTransaction.getTransactionInterval());
+            transaction.setType(dbTransaction.getType());
+
+            String date = Transaction.format.format(dbTransaction.getDate());
+            String title = dbTransaction.getTitle();
+            String amount = dbTransaction.getAmount().toString();
+            String endDate = null;
+            if(dbTransaction.getEndDate() != null) {
+                endDate = Transaction.format.format(dbTransaction.getEndDate());
+            }
+
+            String itemDescription = dbTransaction.getItemDescription();
+            String interval = null;
+            if(dbTransaction.getTransactionInterval() != null) {
+                interval = dbTransaction.getTransactionInterval().toString();
+            }
+            String typeId = Integer.toString(Transaction.getTypeId(dbTransaction.getType()));
+            String transactionId = Integer.toString(dbTransaction.getId());
+
+            new TransactionUpdateInteractor(new Callback(new ICallback() {
+                @Override
+                public Object callback(Object o) {
+                    return 0;
+                }
+            }), context).execute(date, title, amount, endDate, itemDescription, interval, typeId, transactionId);
         }
     }
 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        (this.callback).pass(transactions);
+        if(callback != null) {
+            (this.callback).pass(transactions);
+        }
     }
 
     @Override
-    public Cursor getTransactionCursor(Context context, Transaction.Type t, String orderBy, Date d) {
-        ContentResolver cr = context.getApplicationContext().getContentResolver();
-        String[] kolone = new String[]{
-                TransactionDBOpenHelper.TRANSACTION_INTERNAL_ID,
-                TransactionDBOpenHelper.TRANSACTION_ID,
-                TransactionDBOpenHelper.TRANSACTION_AMOUNT,
-                TransactionDBOpenHelper.TRANSACTION_DATE,
-                TransactionDBOpenHelper.TRANSACTION_TITLE,
-                TransactionDBOpenHelper.TRANSACTION_TYPE,
-                TransactionDBOpenHelper.TRANSACTION_ITEMDESCRIPTION,
-                TransactionDBOpenHelper.TRANSACTION_TRANSACTIONINTERVAL,
-                TransactionDBOpenHelper.TRANSACTION_ENDDATE,
-        };
-        Uri adresa = Uri.parse("content://rma.provider.transactions/elements");
-        String where = "";
-        ArrayList<String> whereArgs = new ArrayList<>();
+    protected void onProgressUpdate(Integer... values) {
 
-        //type
-        if(t != null && !t.toString().equals("ALL")) {
-            where += "type = ? AND ";
-            whereArgs.add(t.toString());
+        for (Integer i : values) {
+            if(i == 0) callback.pass("Getting transactions. Please wait");
+            else if(i == 50) callback.pass("Syncing...");
+            else callback.pass("Syncing complete.");
         }
-
-        //date
-        where += "date >= ? AND date <= ?";
-        Calendar c = Transaction.toCalendar(d.getTime());
-        String month = String.valueOf(c.get(Calendar.MONTH)+1);
-        String year = String.valueOf(c.get(Calendar.YEAR));
-        if(month.length() == 1) month = "0" + month;
-        String firstDayDate = year + "-" + month + "-01";
-        whereArgs.add(firstDayDate);
-
-        //last day in month
-        c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
-        String lastDayDate = year + "-" + month + c.get(Calendar.DAY_OF_MONTH);
-        whereArgs.add(lastDayDate);
-
-        //order by clause
-        String order = "";
-        if(orderBy.startsWith("Price")) {
-            order = "amount";
-        } else if(orderBy.startsWith("Title")) {
-            order = "title";
-        } else {
-            order = "date";
-        }
-        if(orderBy.endsWith("Ascending")) {
-            order += " ASC";
-        } else {
-            order +=" DESC";
-        }
-
-        return cr.query(adresa, kolone, where, whereArgs.toArray(new String[whereArgs.size()]), order);
+        super.onProgressUpdate(values);
     }
 
     @Override
-    public void insertTransaction(Transaction transaction) {
+    public void insertDatabaseTransaction(Transaction transaction) {
         TransactionDatabaseInteractor transactionDatabaseInteractor = new TransactionDatabaseInteractor();
         transactionDatabaseInteractor.addTransaction(context, transaction);
     }

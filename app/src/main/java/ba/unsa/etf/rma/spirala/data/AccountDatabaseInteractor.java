@@ -7,8 +7,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 
-import java.io.FileNotFoundException;
-
 import ba.unsa.etf.rma.spirala.util.TransactionDBOpenHelper;
 
 public class AccountDatabaseInteractor implements IAccountDatabaseInteractor {
@@ -37,8 +35,7 @@ public class AccountDatabaseInteractor implements IAccountDatabaseInteractor {
         String order = null;
         Cursor cursor = cr.query(address, columns, where, whereArgs, order);
         Account a = null;
-        if (cursor != null){
-            cursor.moveToFirst();
+        if (cursor != null && cursor.moveToFirst()){
             int id = cursor.getInt(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.ACCOUNT_ID));
             Double budget = cursor.getDouble(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.ACCOUNT_BUDGET));
             Double monthLimit = cursor.getDouble(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.ACCOUNT_MONTH_LIMIT));

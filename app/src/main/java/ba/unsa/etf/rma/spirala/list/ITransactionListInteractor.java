@@ -11,7 +11,6 @@ import java.util.Date;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 
 public interface ITransactionListInteractor {
-    Cursor getTransactionCursor(Context context, Transaction.Type t, String orderBy, Date d);
-    void insertTransaction(Transaction t);
+    void insertDatabaseTransaction(Transaction t);
 }
 

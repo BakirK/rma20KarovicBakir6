@@ -1,5 +1,7 @@
 package ba.unsa.etf.rma.spirala.list;
 
+import android.content.Context;
+
 import java.util.Date;
 
 import ba.unsa.etf.rma.spirala.data.Account;
@@ -12,4 +14,5 @@ public interface ITransactionListPresenter {
     void refreshCursorTransactions(Transaction.Type t, String orderBy, Date d);
     void refreshAccount(boolean network);
     void getBudget(Callback l);
+    void syncTransactions();
 }

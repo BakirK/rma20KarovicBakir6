@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.spirala.list;
 
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
@@ -50,6 +52,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     private ConstraintLayout layout;
     private InternetAvailabilityChecker mInternetAvailabilityChecker;
     private TransactionListCursorAdapter transactionListCursorAdapter;
+    private boolean preventFirstSync = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,6 +62,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
         InternetAvailabilityChecker.init(getActivity());
         mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
+        mInternetAvailabilityChecker.removeAllInternetConnectivityChangeListeners();
         mInternetAvailabilityChecker.addInternetConnectivityListener(this);
 
         transactionList = (ListView) fragmentView.findViewById(R.id.transactionList);
@@ -242,6 +246,8 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
     @Override
     public void setTransactions(ArrayList<Transaction> transactions) {
+        transactionList.setAdapter(adapter);
+        transactionList.setOnItemClickListener(listItemClickListener);
         adapter.setTransactions(transactions);
     }
 
@@ -265,6 +271,13 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         transactionList.setAdapter(transactionListCursorAdapter);
         transactionList.setOnItemClickListener(listCursorItemClickListener);
         transactionListCursorAdapter.changeCursor(cursor);
+    }
+
+    @Override
+    public void showToast(String message) {
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+        getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+        offlineText.setVisibility(View.INVISIBLE);
     }
 
 
@@ -301,14 +314,16 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     @Override
     public void onInternetConnectivityChanged(boolean isConnected) {
         if (isConnected) {
+            Log.d("online","online");
             transactionList.setAdapter(adapter);
             transactionList.setOnItemClickListener(listItemClickListener);
-            getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
-            offlineText.setVisibility(View.INVISIBLE);
-
+            getPresenter().syncTransactions();
+            /*getPresenter().refreshTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);
+            offlineText.setVisibility(View.INVISIBLE);*/
             getPresenter().refreshAccount(mInternetAvailabilityChecker.getCurrentInternetAvailabilityStatus());
         }
         else {
+            Log.d("online","offline");
             transactionList.setAdapter(transactionListCursorAdapter);
             transactionList.setOnItemClickListener(listCursorItemClickListener);
             getPresenter().refreshCursorTransactions((Transaction.Type)filterBySpinner.getSelectedItem(), sortBySpinner.getSelectedItem().toString(), d);

@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.spirala.list;
 
 import android.content.Context;
+import android.os.Looper;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import ba.unsa.etf.rma.spirala.data.AccountDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.data.AccountInteractor;
 import ba.unsa.etf.rma.spirala.data.Transaction;
 import ba.unsa.etf.rma.spirala.data.TransactionAmount;
+import ba.unsa.etf.rma.spirala.data.TransactionDatabaseInteractor;
 import ba.unsa.etf.rma.spirala.data.TransactionSortInteractor;
 import ba.unsa.etf.rma.spirala.util.ICallback;
 import ba.unsa.etf.rma.spirala.util.Callback;
@@ -23,13 +25,6 @@ public class TransactionListPresenter implements ITransactionListPresenter {
     ArrayList<Transaction> transactions = null;
 
     public TransactionListPresenter(ITransactionListView view, Context context) {
-        new TransactionListInteractor(new Callback(new ICallback() {
-            @Override
-            public Object callback(Object o) {
-                transactions = (ArrayList<Transaction>) o;
-                return 0;
-            }
-        }), context).execute();
         this.view = view;
         this.context = context;
     }
@@ -90,10 +85,9 @@ public class TransactionListPresenter implements ITransactionListPresenter {
 
     }
 
-//TODO
     @Override
     public void refreshCursorTransactions(Transaction.Type t, String orderBy, Date d) {
-        view.setCursor(new TransactionListInteractor().getTransactionCursor(context, t, orderBy, d));
+        view.setCursor(new TransactionDatabaseInteractor().getTransactionCursor(context, t, orderBy, d));
     }
 
     @Override
@@ -122,7 +116,23 @@ public class TransactionListPresenter implements ITransactionListPresenter {
         new TransactionListInteractor(new Callback(new ICallback() {
             @Override
             public Object callback(Object o) {
-                return l.pass(account.getBudget() - TransactionAmount.getTotalAmount((ArrayList<Transaction>) o));
+                if(o instanceof ArrayList) {
+                    return l.pass(account.getBudget() - TransactionAmount.getTotalAmount((ArrayList<Transaction>) o));
+                }
+                return 0;
+            }
+        }), context).execute();
+    }
+
+    @Override
+    public void syncTransactions() {
+        new TransactionListInteractor(new Callback(new ICallback() {
+            @Override
+            public Object callback(Object o) {
+                if(o instanceof String) {
+                    view.showToast((String)o);
+                }
+                return 0;
             }
         }), context).execute();
     }
