@@ -565,11 +565,11 @@ public class TransactionDetailFragment extends Fragment implements DatePickerDia
     public void onInternetConnectivityChanged(boolean isConnected) {
         getPresenter().refreshAccount(isConnected);
         if (isConnected) {
-            Log.d("online2","online");
+            Log.d("online","online");
             offlineText.setVisibility(View.INVISIBLE);
         }
         else {
-            Log.d("online2","online");
+            Log.d("online","offline");
             offlineText.setVisibility(View.VISIBLE);
         }
     }

@@ -142,12 +142,12 @@ public class BudgetFragment extends Fragment implements IBudgetView, InternetCon
     public void onInternetConnectivityChanged(boolean isConnected) {
         getPresenter().refreshAccount(isConnected);
         if (isConnected) {
+            Log.d("online","online");
             offlineText.setVisibility(View.INVISIBLE);
-            Log.d("online3","online");
         }
         else {
+            Log.d("online","offline");
             offlineText.setVisibility(View.VISIBLE);
-            Log.d("online3","online");
         }
     }
 }
